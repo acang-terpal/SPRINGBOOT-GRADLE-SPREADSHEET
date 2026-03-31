@@ -1,0 +1,439 @@
+<!doctype html>
+<!--[if lte IE 9]> <html class="lte-ie9" lang="en"> <![endif]-->
+<!--[if gt IE 9]><!-->
+<html lang="en">
+<!--<![endif]-->
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- Remove Tap Highlight on Windows Phone IE -->
+    <meta name="msapplication-tap-highlight" content="no" />
+
+    <link rel="icon" type="image/png" href="${webRootUrl}assets/img/favicon-16x16.png" sizes="16x16">
+    <link rel="icon" type="image/png" href="${webRootUrl}assets/img/favicon-32x32.png" sizes="32x32">
+
+    <title>Altair Admin v2.7.0</title>
+
+
+    <!-- uikit -->
+    <link rel="stylesheet" href="${webRootUrl}bower_components/uikit/css/uikit.almost-flat.min.css" media="all">
+
+    <!-- flag icons -->
+    <link rel="stylesheet" href="${webRootUrl}assets/icons/flags/flags.min.css" media="all">
+
+    <!-- style switcher -->
+    <link rel="stylesheet" href="${webRootUrl}assets/css/style_switcher.min.css" media="all">
+
+    <!-- altair admin -->
+    <link rel="stylesheet" href="${webRootUrl}assets/css/main.min.css" media="all">
+
+    <!-- themes -->
+    <link rel="stylesheet" href="${webRootUrl}assets/css/themes/themes_combined.min.css" media="all">
+
+    <!-- plugin -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Icons" rel="stylesheet">
+
+    <!-- matchMedia polyfill for testing media queries in JS -->
+    <!--[if lte IE 9]>
+        <script type="text/javascript" src="bower_components/matchMedia/matchMedia.js"></script>
+        <script type="text/javascript" src="bower_components/matchMedia/matchMedia.addListener.js"></script>
+        <link rel="stylesheet" href="${webRootUrl}assets/css/ie.css" media="all">
+    <![endif]-->
+
+</head>
+
+<body class=" sidebar_main_open sidebar_main_swipe">
+    <div id="webRootUrl" style="visibility: hidden;">${webRootUrl}</div>
+
+    <!-- main header -->
+    ${headerObj}
+    <!-- main header end -->
+
+    <!-- main sidebar -->
+    ${sideBarObj}
+
+    ${pageContentObj}
+
+    <div class="md-fab-wrapper">
+        <!-- <a class="md-fab md-fab-accent md-fab-wave" href="#new_board" data-uk-modal="{ center:true }"> -->
+        <a id="new_member_button" class="md-fab md-fab-accent md-fab-wave">
+            <i class="material-icons">&#xE145;</i>
+        </a>
+    </div>
+
+    <!-- secondary sidebar -->
+    ${sideBarSecondaryObj}
+    <!-- secondary sidebar end -->
+
+    <!-- google web fonts -->
+    <script>
+        WebFontConfig = {
+            google: {
+                families: [
+                    'Source+Code+Pro:400,700:latin',
+                    'Roboto:400,300,500,700,400italic:latin'
+                ]
+            }
+        };
+        (function () {
+            var wf = document.createElement('script');
+            wf.src = ('https:' == document.location.protocol ? 'https' : 'http') +
+                '://ajax.googleapis.com/ajax/libs/webfont/1/webfont.js';
+            wf.type = 'text/javascript';
+            wf.async = 'true';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(wf, s);
+        })();
+    </script>
+
+    <!-- common functions -->
+    <script src="${webRootUrl}assets/js/common.min.js"></script>
+    <!-- uikit functions -->
+    <script src="${webRootUrl}assets/js/uikit_custom.min.js"></script>
+    <!-- altair common functions/helpers -->
+    <script src="${webRootUrl}assets/js/altair_admin_common.min.js"></script>
+
+    <!-- page specific plugins -->
+    <!--  cards component functions -->
+    <script src="${webRootUrl}assets/js/pages/components_cards.min.js"></script>
+
+    <script>
+        $(function () {
+            if (isHighDensity) {
+                // enable hires images
+                altair_helpers.retina_images();
+            }
+            if (Modernizr.touch) {
+                // fastClick (touch devices)
+                FastClick.attach(document.body);
+            }
+        });
+        $window.load(function () {
+            // ie fixes
+            altair_helpers.ie_fix();
+        });
+    </script>
+
+
+    <!-- style switcher -->
+    ${styleSwitcherObj}
+    <!-- style switcher end -->
+
+    <script>
+        $(document).ready(function () {
+            ctrlMember.init();
+        });
+
+        var ctrlMember = {
+            jArrAccountId: [],
+            modalMemberInsert: UIkit.modal("#add_member"),
+            init: function () {
+                ctrlMember.initData();
+                ctrlMember.initBehaviour();
+            },
+            initData: function () {
+                //init collection data
+                var rawData = $.trim($("#listMember").html().replace(/\s/g, ""));
+                if(rawData != '[]'){
+                    var jArrListaccountIdStr = rawData.substring(0, rawData.length - 2) + "]";
+                    ctrlMember.jArrAccountId = JSON.parse(jArrListaccountIdStr);
+                }
+            },
+            initBehaviour: function () {
+                //add on click listener on insert new action
+                $('#new_member_button').click(function () {
+                    ctrlMember.modalMemberInsert.show();
+                });
+                //confirmation and hit api new data
+                $('#submit_new_member').click(function () {
+                    ctrlMember.submitAddMember();
+                });
+                ctrlMember.addMemberActionListener();
+            },
+            modifyHtmlDataAccount: function(){
+                //jArrMemberStrHtml = $("#listMember").html().replace(/\s/g, "");
+                //jArrMemberStrHtml = jArrMemberStrHtml.substring(0, jArrMemberStrHtml.length - 2) + "]";
+                //jArrMemberStrHtml = (jArrMemberStrHtml == ']') ? '[]' : jArrMemberStrHtml;
+
+                jArrMemberStrHtml = JSON.stringify(ctrlMember.jArrAccountId);
+                $("#listMember").html(jArrMemberStrHtml.substring(0, jArrMemberStrHtml.length - 1) + ",]");
+            },
+            removeMemberAccountListener: function(){
+                $.each(ctrlMember.jArrAccountId, function (index, val) {
+                    //add on click listener on edit action each board
+                    $('#delete_' + val).off("click");
+                    $('#as_admin_' + val).off("click");
+                    $('#as_watcher_' + val).off("click");
+                    $('#as_member_' + val).off("click");
+                });
+            },
+            addMemberActionListener: function(){
+                //add on click listener
+                $.each(ctrlMember.jArrAccountId, function (index, val) {
+                    //add on click listener on edit action each board
+                    $('#delete_' + val).click(function () {
+                        accountId = $(this).attr('id').replace("delete_", "");
+                        dataAccountId = JSON.parse($('#data_' + accountId).html());
+                        console.log(dataAccountId);
+                        ctrlMember.submitDeleteMember(dataAccountId);
+                    });
+                    //add on click listener on edit action each board
+                    $('#as_admin_' + val).click(function () {
+                        accountId = $(this).attr('id').replace("as_admin_", "");
+                        dataAccountId = JSON.parse($('#data_' + accountId).html());
+                        console.log(dataAccountId);
+                        ctrlMember.submitAsAdmin(dataAccountId);
+                    });
+                    //add on click listener on edit action each board
+                    $('#as_watcher_' + val).click(function () {
+                        accountId = $(this).attr('id').replace("as_watcher_", "");
+                        dataAccountId = JSON.parse($('#data_' + accountId).html());
+                        console.log(dataAccountId);
+                        ctrlMember.submitAsWatcher(dataAccountId);
+                    });                  
+                    $('#as_member_' + val).click(function () {
+                        accountId = $(this).attr('id').replace("as_member_", "");
+                        dataAccountId = JSON.parse($('#data_' + accountId).html());
+                        console.log(dataAccountId);
+                        ctrlMember.submitAsMember(dataAccountId);
+                    });
+                });
+            },
+            submitAddMember: function () {
+                var modalLoading = UIkit.modal.blockUI("On Progress Add Member"); // modal.hide() to unblock
+                $.ajax({
+                    url: $("#webRootUrl").html() + 'ControllerMamenMember/addMember',
+                    type: 'POST',
+                    async: true,
+                    cache: false,
+                    data: {
+                        'account_email': $('#account_email').val()
+                    },
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    //milisecond timeout
+                    timeout: 0,
+                    success: function (jObjRespStr) {
+                        ctrlMember.consoleLog(jObjRespStr);
+                        jObjResp = JSON.parse(jObjRespStr);
+                        if (jObjResp.rc == '00') {
+                            ctrlMember.modalMemberInsert.hide();
+                            ctrlMember.removeMemberAccountListener();
+                            ctrlMember.jArrAccountId.push(jObjResp.jObjAccount.account_id);
+                            //add new board to html element
+                            memberElement = '<li id="container_'+jObjResp.jObjAccount.account_id+'">\
+                                <div class="md-card-list-item-menu" data-uk-dropdown="{mode:\'hover\',pos:\'bottom-right\'}">\
+                                    <a href="#" class="md-icon material-icons">&#xE5D4;</a>\
+                                    <div class="uk-dropdown uk-dropdown-small">\
+                                        <ul class="uk-nav">\
+                                            <li class="uk-nav-header">Set Role As</li>\
+                                            <li><a id="as_admin_'+jObjResp.jObjAccount.account_id+'">Admin</a></li>\
+                                            <li><a id="as_watcher_'+jObjResp.jObjAccount.account_id+'">Watcher</a></li>\
+                                            <li><a id="as_member_'+jObjResp.jObjAccount.account_id+'">Member</a></li>\
+                                            <li class="uk-nav-divider"></li>\
+                                            <li><a id="delete_'+jObjResp.jObjAccount.account_id+'"><i class="material-icons">&#xE872;</i> Delete</a></li>\
+                                            <div id="data_'+jObjResp.jObjAccount.account_id+'" style="display: none;">\
+                                                {"account_id" : "'+jObjResp.jObjAccount.account_id+'", "account_name" : "'+jObjResp.jObjAccount.account_name+'", "account_email" : "'+jObjResp.jObjAccount.account_email+'"}\
+                                            </div>\
+                                        </ul>\
+                                    </div>\
+                                </div>\
+                                <div class="md-card-list-item-avatar-wrapper">\
+                                    <span class="md-card-list-item-avatar md-bg-light-green">ne</span>\
+                                </div>\
+                                <div class="md-card-list-item-sender">\
+                                    <span>'+jObjResp.jObjAccount.account_name+'</span>\
+                                </div>\
+                                <div class="md-card-list-item-subject">\
+                                    <span>'+jObjResp.jObjAccount.account_email+'\
+                                        <div style="float: right;" id="as_'+jObjResp.jObjAccount.account_id+'">As '+jObjResp.jObjAccount.level_name+'</div>\
+                                    </span>\
+                                </div>\
+                            </li>';
+                            $('#container_member').append(memberElement);
+                            ctrlMember.addMemberActionListener();
+                        } else if (jObjResp.rc == '02') {
+                            window.location.href = jObjResp.redirectUrl;
+                        } else {
+                            UIkit.modal.alert(jObjResp.message);
+                        }
+                    },
+                    error: function (e) {
+                        console.debug(e);
+                        UIkit.modal.alert("Failed update data, network error!");
+                    },
+                    complete: function (e) {
+                        modalLoading.hide();
+                    }
+                });
+            },
+            submitAsAdmin: function (dataAccountId) {
+                UIkit.modal.confirm('Are you sure set member as Admin for "'+dataAccountId.account_name+'"?', function () {
+                    var modalLoading = UIkit.modal.blockUI("On Progress update Member as Admin"); // modal.hide() to unblock
+                    $.ajax({
+                        url: $("#webRootUrl").html() + 'ControllerMamenMember/setMemberAs',
+                        type: 'POST',
+                        async: true,
+                        cache: false,
+                        data: {
+                            'account_id': dataAccountId.account_id,
+                            'level_id': 2
+                        },
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        //milisecond timeout
+                        timeout: 0,
+                        success: function (jObjRespStr) {
+                            ctrlMember.consoleLog(jObjRespStr);
+                            jObjResp = JSON.parse(jObjRespStr);
+                            if (jObjResp.rc == '00') {
+                                $('#as_' + jObjResp.jObjAccount.account_id).html('As ' + jObjResp.jObjAccount.level_name);
+                            } else if (jObjResp.rc == '02') {
+                                window.location.href = jObjResp.redirectUrl;
+                            } else {
+                                UIkit.modal.alert(jObjResp.message);
+                            }
+                        },
+                        error: function (e) {
+                            console.debug(e);
+                            UIkit.modal.alert("Failed update data, network error!");
+                        },
+                        complete: function (e) {
+                            modalLoading.hide();
+                        }
+                    });
+                }, function () {
+
+                });
+            },
+            submitAsWatcher: function (dataAccountId) {
+                UIkit.modal.confirm('Are you sure set member as Watcher for "'+dataAccountId.account_name+'"?', function () {
+                    var modalLoading = UIkit.modal.blockUI("On Progress update Member as Watcher"); // modal.hide() to unblock
+                    $.ajax({
+                        url: $("#webRootUrl").html() + 'ControllerMamenMember/setMemberAs',
+                        type: 'POST',
+                        async: true,
+                        cache: false,
+                        data: {
+                            'account_id': dataAccountId.account_id,
+                            'level_id': 4
+                        },
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        //milisecond timeout
+                        timeout: 0,
+                        success: function (jObjRespStr) {
+                            ctrlMember.consoleLog(jObjRespStr);
+                            jObjResp = JSON.parse(jObjRespStr);
+                            if (jObjResp.rc == '00') {
+                                $('#as_' + jObjResp.jObjAccount.account_id).html('As ' + jObjResp.jObjAccount.level_name);
+                            } else if (jObjResp.rc == '02') {
+                                window.location.href = jObjResp.redirectUrl;
+                            } else {
+                                UIkit.modal.alert(jObjResp.message);
+                            }
+                        },
+                        error: function (e) {
+                            console.debug(e);
+                            UIkit.modal.alert("Failed update data, network error!");
+                        },
+                        complete: function (e) {
+                            modalLoading.hide();
+                        }
+                    });
+                }, function () {
+
+                });
+            },
+            submitAsMember: function (dataAccountId) {
+                UIkit.modal.confirm('Are you sure set member as Member for "'+dataAccountId.account_name+'"?', function () {
+                    var modalLoading = UIkit.modal.blockUI("On Progress update Member as Member"); // modal.hide() to unblock
+                    $.ajax({
+                        url: $("#webRootUrl").html() + 'ControllerMamenMember/setMemberAs',
+                        type: 'POST',
+                        async: true,
+                        cache: false,
+                        data: {
+                            'account_id': dataAccountId.account_id,
+                            'level_id': 3
+                        },
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        //milisecond timeout
+                        timeout: 0,
+                        success: function (jObjRespStr) {
+                            ctrlMember.consoleLog(jObjRespStr);
+                            jObjResp = JSON.parse(jObjRespStr);
+                            if (jObjResp.rc == '00') {
+                                $('#as_' + jObjResp.jObjAccount.account_id).html('As ' + jObjResp.jObjAccount.level_name);
+                            } else if (jObjResp.rc == '02') {
+                                window.location.href = jObjResp.redirectUrl;
+                            } else {
+                                UIkit.modal.alert(jObjResp.message);
+                            }
+                        },
+                        error: function (e) {
+                            console.debug(e);
+                            UIkit.modal.alert("Failed update data, network error!");
+                        },
+                        complete: function (e) {
+                            modalLoading.hide();
+                        }
+                    });
+                }, function () {
+
+                });
+            },
+            submitDeleteMember: function (dataAccountId) {
+                UIkit.modal.confirm('Are you sure to remove "'+dataAccountId.account_name+'" as your member team?', function () {
+                    var modalLoading = UIkit.modal.blockUI("On Progress remove Member"); // modal.hide() to unblock
+                    $.ajax({
+                        url: $("#webRootUrl").html() + 'ControllerMamenMember/deleteMember',
+                        type: 'POST',
+                        async: true,
+                        cache: false,
+                        data: {
+                            'account_id': dataAccountId.account_id
+                        },
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        //milisecond timeout
+                        timeout: 0,
+                        success: function (jObjRespStr) {
+                            ctrlMember.consoleLog(jObjRespStr);
+                            jObjResp = JSON.parse(jObjRespStr);
+                            if (jObjResp.rc == '00') {
+                                $('#container_' + jObjResp.jObjAccount.account_id).remove();
+                            } else if (jObjResp.rc == '02') {
+                                window.location.href = jObjResp.redirectUrl;
+                            } else {
+                                UIkit.modal.alert(jObjResp.message);
+                            }
+                        },
+                        error: function (e) {
+                            console.debug(e);
+                            UIkit.modal.alert("Failed update data, network error!");
+                        },
+                        complete: function (e) {
+                            modalLoading.hide();
+                        }
+                    });
+                }, function () {
+
+                });
+            },
+            consoleLog: function (string) {
+                console.log(string);
+            }
+        }
+    </script>
+</body>
+
+</html>

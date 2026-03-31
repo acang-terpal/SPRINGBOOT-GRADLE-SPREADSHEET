@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mkn>
+    <commonServer>
+        <portAdapter>20000</portAdapter>
+        <maxThreads>10240</maxThreads>
+        <minThreads>10</minThreads>
+        <lowThreads>320</lowThreads>
+        <maxQueued>-1</maxQueued> <!-- -1 never reject -->
+        <maxTotalConnections>100000</maxTotalConnections>
+        <maxIoIdleTimeMs>320000</maxIoIdleTimeMs>
+        <pathUri>/</pathUri> <!-- not use on springboot -->
+        <sessionTtl>1800</sessionTtl> <!--in second, 1800 = 30 minute-->
+        <timeRemoveBeforeSessionDelete>0</timeRemoveBeforeSessionDelete> <!--in ms, 120000 = 2 minute-->
+    </commonServer>
+
+<!--    <databasePgsqlRemit>-->
+<!--        <ip>localhost</ip>-->
+<!--        <port>54321</port>-->
+<!--        <database>REMITTANCE_V2</database>-->
+<!--        <user>veloapi</user>-->
+<!--        <password>z9SR8n8AKq1TsluU53</password>-->
+<!--    </databasePgsqlRemit>-->
+    <databasePgsqlRemit>
+        <ip>localhost</ip>
+        <port>5432</port>
+        <database>REMITTANCE_V2</database>
+        <user>postgres</user>
+        <password>fujitsu</password>
+    </databasePgsqlRemit>
+<!--        <databasePgsqlRemit>-->
+<!--            <ip>10.41.100.1</ip>-->
+<!--            <port>5432</port>-->
+<!--            <database>REMITTANCE_V2</database>-->
+<!--            <user>postgres</user>-->
+<!--            <password>MNWFWF3Uu4yEfbut</password>-->
+<!--        </databasePgsqlRemit>-->
+    <databasePgsqlVelo>
+        <ip>localhost</ip>
+        <port>54321</port>
+        <database>VELO</database>
+        <user>veloapi</user>
+        <password>z9SR8n8AKq1TsluU53</password>
+    </databasePgsqlVelo>
+    <!--    <databasePgsqlVelo>-->
+    <!--        <ip>velo-db01.cgjl6dp9oit0.ap-southeast-1.rds.amazonaws.com</ip>-->
+    <!--        <port>5432</port>-->
+    <!--        <database>VELO</database>-->
+    <!--        <user>veloapi</user>-->
+    <!--        <password>z9SR8n8AKq1TsluU53</password>-->
+    <!--    </databasePgsqlVelo>-->
+
+    <!--<databasePgsqlSales>-->
+    <!--<ip>172.16.50.140</ip>-->
+    <!--<port>5432</port>-->
+    <!--<database>API_SALES</database>-->
+    <!--<user>api_android</user>-->
+    <!--<password>2nd2Sn6v</password>-->
+    <!--</databasePgsqlSales>-->
+    <databasePgsqlSales>
+        <ip>172.16.80.102</ip>
+        <port>5432</port>
+        <database>API_SALES</database>
+        <user>api_android</user>
+        <password>4v4d4k3d4vr4</password>
+    </databasePgsqlSales>
+
+    <!--<databaseMysql>-->
+    <!--<ip>172.16.50.141</ip>-->
+    <!--<port>3306</port>-->
+    <!--<database>API_Pulsa</database>-->
+    <!--<user>temp_dev</user>-->
+    <!--<password>2nd2Sn6v</password>-->
+    <!--</databaseMysql>-->
+    <databaseMysql>
+        <ip>172.16.80.122</ip>
+        <port>3306</port>
+        <database>API_Pulsa</database>
+        <user>tmn_aldi</user>
+        <password>P@ssw0rd</password>
+    </databaseMysql>
+
+    <encryption>
+        <!--<key>&#38;&#37;yhdk&#40;&#41;83h&#36;&#35;ksP</key>--> <!--&%yhdk()83h$#ksP--> <!-- prod -->
+        <!--<iv>L&#38;hgYr&#41;&#36;&#33;&#38;nxbTH&#38;</iv>--> <!--L&hgYr)$!&nxbTH&--> <!-- prod -->
+        <key>1234567890123456</key><!-- dev -->
+        <iv>1234567890123456</iv><!-- dev -->
+        <keyDb>key1234567890987</keyDb>
+        <ivDb>iv12345678909876</ivDb>
+        <!-- true/false -->
+        <encRequest>true</encRequest>
+        <encResponse>true</encResponse>
+    </encryption>
+    <misc>
+        <scaleImgSize>200</scaleImgSize>
+        <!-- true/false -->
+        <logStream>true</logStream>
+        <masterFolder>/opt/internal/love-id-baseapi-remit-v2/</masterFolder>
+        <sessionUrl>http://ec2-18-139-197-17.ap-southeast-1.compute.amazonaws.com:40123/Session</sessionUrl>
+    </misc>
+    <ftpServerInventory>
+        <ip>inventory.inception.co.id</ip>
+        <port>21</port>
+        <user>velo</user>
+        <password>&#86;&#51;&#108;&#48;&#102;&#116;&#112;&#45;&#50;&#48;&#49;&#57;</password>
+        <path>/devel/remit/</path>
+        <!--        <path>/prod/remit/</path>-->
+    </ftpServerInventory>
+</mkn>

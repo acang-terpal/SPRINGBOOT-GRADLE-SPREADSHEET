@@ -1,0 +1,51 @@
+<aside id="sidebar_main">
+
+    <div class="sidebar_main_header">
+        <div class="sidebar_logo">
+            <a href="index.html" class="sSidebar_hide sidebar_logo_large">
+                <img class="logo_regular" src="${webRootUrl}assets/img/logo_main.png" alt="" height="15"
+                    width="71" />
+                <img class="logo_light" src="${webRootUrl}assets/img/logo_main_white.png" alt="" height="15"
+                    width="71" />
+            </a>
+            <a href="index.html" class="sSidebar_show sidebar_logo_small">
+                <img class="logo_regular" src="${webRootUrl}assets/img/logo_main_small.png" alt="" height="32"
+                    width="32" />
+                <img class="logo_light" src="${webRootUrl}assets/img/logo_main_small_light.png" alt="" height="32"
+                    width="32" />
+            </a>
+        </div>
+        <div class="sidebar_actions">
+            <select id="lang_switcher" name="lang_switcher">
+                <option value="gb" selected>English</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="menu_section">
+        <ul>
+            <!-- <li class="${dashBoardActive}" title="Dashboard">
+                <a href="${webRootUrl}ControllerMamenDashboard/getDashboard/index">
+                    <span class="menu_icon"><i class="material-icons">&#xE871;</i></span>
+                    <span class="menu_title">Dashboard</span>
+                </a>
+            </li> -->
+            <!-- <li class="" title="Board">
+                <a href="#">
+                    <span class="menu_icon"><i class="material-icons">view_kanban</i></span>
+                    <span class="menu_title">Board</span>
+                </a>
+                <ul>
+                    <li class="${boardAsOwnActive}"><a href="${webRootUrl}ControllerMamenBoard/getBoard/page_boards?level_id=1">As Owner</a></li>
+                    <li class="${boardAsMemberActive}" ><a href="${webRootUrl}ControllerMamenBoard/getBoard/page_boards?level_id=3">As Member</a></li>
+                </ul>
+            </li> -->
+            <li class="${memberActive}" title="HTB">
+                <a href="${webRootUrl}ControllerSpreadSheetHtb/getHtb/htb">
+                    <span class="menu_icon"><i class="material-icons">&#xe7ef;</i></span>
+                    <span class="menu_title">HTB</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</aside><!-- main sidebar end -->

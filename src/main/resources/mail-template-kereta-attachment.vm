@@ -1,0 +1,417 @@
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+    <head>
+        <meta charset="utf-8"></meta> <!-- utf-8 works for most cases -->
+        <meta name="viewport" content="width=device-width"></meta>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+        <meta name="x-apple-disable-message-reformatting"></meta>
+        <title></title>
+
+        <style>
+            html,
+            body {
+                margin: 0 auto !important;
+                padding: 0 !important;
+                height: 100% !important;
+                width: 100% !important;
+            }
+            * {
+                -ms-text-size-adjust: 100%;
+                -webkit-text-size-adjust: 100%;
+            }
+            div[style*="margin: 16px 0"] {
+                margin: 0 !important;
+            }
+            table,
+            td {
+                mso-table-lspace: 0pt !important;
+                mso-table-rspace: 0pt !important;
+            }
+            table {
+                border-spacing: 0 !important;
+                border-collapse: collapse !important;
+                table-layout: fixed !important;
+                margin: 0 auto !important;
+            }
+            table table table {
+                table-layout: auto;
+            }
+            img {
+                -ms-interpolation-mode:bicubic;
+            }
+
+            a {
+                text-decoration: none;
+            }
+
+            *[x-apple-data-detectors], 
+            .unstyle-auto-detected-links *,
+            .aBn {
+                border-bottom: 0 !important;
+                cursor: default !important;
+                color: inherit !important;
+                text-decoration: none !important;
+                font-size: inherit !important;
+                font-family: inherit !important;
+                font-weight: inherit !important;
+                line-height: inherit !important;
+            }
+
+            .a6S {
+                display: none !important;
+                opacity: 0.01 !important;
+            }
+
+            img.g-img + div {
+                display: none !important;
+            }
+
+            @media only screen and (min-device-width: 320px) and (max-device-width: 374px) {
+                .email-container {
+                    min-width: 320px !important;
+                }
+            }
+
+            @media only screen and (min-device-width: 375px) and (max-device-width: 413px) {
+                .email-container {
+                    min-width: 375px !important;
+                }
+            }
+
+            @media only screen and (min-device-width: 414px) {
+                .email-container {
+                    min-width: 414px !important;
+                }
+            }
+        </style>
+
+        <style>
+
+            .button-td,
+            .button-a {
+                transition: all 100ms ease-in;
+            }
+            .button-td-primary:hover,
+            .button-a-primary:hover {
+                background: #555555 !important;
+                border-color: #555555 !important;
+            }
+
+            @media screen and (max-width: 600px) {
+                .email-container p {
+                    font-size: 11px !important;
+                }
+            }
+        </style>
+
+    </head>
+
+    <body width="100%" style="margin: 0; padding: 0 !important; mso-line-height-rule: exactly; background-color: #ffffff;">
+        <center style="width: 100%; background-color: #ffffff;">
+
+            <div style="display: none; font-size: 1px; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden; mso-hide: all; font-family: sans-serif;">
+                (Optional) This text will appear in the inbox preview, but not the email body. It can be used to supplement the email subject line or even summarize the email's contents. Extended text preheaders (~490 characters) seems like a better UX for anyone using a screenreader or voice-command apps like Siri to dictate the contents of an email. If this text is not included, email clients will automatically populate it using the text (including image alt text) at the start of the email's body.
+            </div>
+
+            <div style="display: none; font-size: 1px; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden; mso-hide: all; font-family: sans-serif;">
+                &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
+            </div>
+
+            <div style="max-width: 800px; margin: 0 auto; border-style: solid; border-width:thin; border-color: gray;" class="email-container">
+
+                <table align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 auto;">
+					<tr>
+						<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:800px;">
+							<tr>
+								<td style="background-color: #ffffff; text-align: left; vertical-align: middle;" valign="top" width="25%">
+									<img src="http://inventory.truemoney.co.id/prod/resource/kai.jpg" width="150"/>
+								</td>
+								<td style="background-color: #ffffff; text-align: right; vertical-align: middle;" valign="top" width="25%">
+									<img src="http://inventory.truemoney.co.id/prod/resource/padiciti.png" width="150"/>
+								</td>
+							</tr>
+						</table>
+                    </tr>
+                    <tr>
+                        <td style="background-color: #ffffff;">
+                            <h1 align="center" style="margin: 10px 0 10px 0; font-family: sans-serif; font-size: 25px; line-height: 30px; color: #333333; font-weight: normal;">Bukti Pembayaran Kereta Api</h1>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td height="100%" valign="top" width="100%" style="padding: 0 10px 40px 10px; background-color: #ffffff;">
+                            <h1 style="margin: 10px 0 10px 0; font-family: sans-serif; font-size: 20px; line-height: 30px; color: #333333; font-weight: normal;">Rincian Pemesanan</h1>
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:800px;">
+                                <tr>
+                                    <td valign="top" width="75%">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="font-size: 14px; text-align: left;">
+                                            <tr>
+                                                <td width="25%" style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 10px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">Kode Transaksi</p>
+                                                </td>
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 10px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">: $kodeTransaksi</p>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td width="25%" style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 10px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">Tanggal Pemesanan</p>
+                                                </td>
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 10px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">: $tglPemesanan</p>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td width="25%" style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 10px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">Status</p>
+                                                </td>
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 10px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">: Paid</p>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td width="25%" style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 10px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">Nama Pelanggan</p>
+                                                </td>
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 10px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">: $namaPelanggan</p>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td width="25%" style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 10px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">Telepon</p>
+                                                </td>
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 10px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">: $tlp</p>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td width="25%" style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 10px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">Email</p>
+                                                </td>
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 10px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">: $email</p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+									<td valign="top" width="25%">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="font-size: 14px; text-align: left;">
+                                            <tr>
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 10px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">Kode Booking</p>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="text-align: left; font-family: sans-serif; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <h1 align="left" style="margin: 0px 0 0px 0; font-family: sans-serif; font-size: 25px; line-height: 30px; color: #333333; font-weight: normal;">$kodeBooking</h1>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 25px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <!-- <img src="https://www.qrstuff.com/images/default_qrcode.png" width="600" height="" alt="alt_text" border="0" style="width: 60%; max-width: 800px; height: auto; background: #dddddd; font-family: sans-serif; font-size: 15px; line-height: 15px; color: #555555; margin: auto;" class="g-img" /> -->
+													$qrLink
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+								</tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td height="100%" valign="top" width="100%" style="padding: 0 10px 40px 10px; background-color: #ffffff;">
+                            <h1 style="margin: 10px 0 10px 0; font-family: sans-serif; font-size: 20px; line-height: 30px; color: #333333; font-weight: normal;">Rincian Penumpang</h1>
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:800px;">
+                                <tr>
+                                    <td valign="top" width="100%">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="font-size: 14px; text-align: left;">
+                                            <tr style="background-color: gainsboro">
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">Nama</p>
+                                                </td>
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">No Identitas</p>
+                                                </td>
+                                                <td valign="top" width="20%" style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">No Kursi</p>
+                                                </td>
+                                            </tr>
+											$rincianPenumpang
+                                            <!-- <tr style="background-color: white">
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">Hasan</p>
+                                                </td>
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">4453463742445577356346</p>
+                                                </td>
+                                                <td valign="top" width="20%" style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">13A</p>
+                                                </td>
+                                            </tr> -->
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td height="100%" valign="top" width="100%" style="padding: 0 10px 40px 10px; background-color: #ffffff;">
+                            <h1 style="margin: 10px 0 10px 0; font-family: sans-serif; font-size: 20px; line-height: 30px; color: #333333; font-weight: normal;">Rincian Jadwal Kereta Api</h1>
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:800px;">
+                                <tr>
+                                    <td valign="top" width="100%">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="font-size: 14px; text-align: left;">
+                                            <tr style="background-color: gainsboro">
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">Nomor Kereta</p>
+                                                </td>
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">Nama Kereta</p>
+                                                </td>
+												<td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">Kelas</p>
+                                                </td>
+                                                <td valign="top" width="20%" style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">Stasiun Keberangkatan</p>
+                                                </td>
+                                                <td valign="top" width="20%" style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">Stasiun Tujuan</p>
+                                                </td>
+                                            </tr>
+											$rincianJadwal
+                                            <!-- <tr style="background-color: white">
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">147</p>
+                                                </td>
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">Argo Bromo</p>
+                                                </td>
+                                                <td valign="top" width="20%" style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">Gambir, 6 maret 2018 20:00</p>
+                                                </td>
+                                                <td valign="top" width="20%" style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">Gambir, 6 maret 2018 23:00</p>
+                                                </td>
+                                            </tr> -->
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td height="100%" valign="top" width="100%" style="padding: 0 10px 40px 10px; background-color: #ffffff;">
+                            <h1 style="margin: 10px 0 10px 0; font-family: sans-serif; font-size: 20px; line-height: 30px; color: #333333; font-weight: normal;">Rincian Biaya Per Booking dan Info Pembayaran</h1>
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:800px;">
+                                <tr>
+                                    <td valign="top" width="50%">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="font-size: 14px; text-align: left;">
+                                            <tr style="background-color: white">
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">$jmlDewasa</p>
+                                                </td>
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">$totalBiaya</p>
+                                                </td>
+                                            </tr>
+                                            <tr style="background-color: white">
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">$jmlAnak</p>
+                                                </td>
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">Rp.0</p>
+                                                </td>
+                                            </tr>
+											<tr style="background-color: white">
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">Convenience fee</p>
+                                                </td>
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">$totalAdmin</p>
+                                                </td>
+                                            </tr>
+                                            <tr style="background-color: white">
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">Diskon channel KAI</p>
+                                                </td>
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">$totalDiskon</p>
+                                                </td>
+                                            </tr>
+                                            <tr style="background-color: white">
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">Total Biaya</p>
+                                                </td>
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">$hargaCetak</p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td valign="top" width="50%">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="font-size: 14px; text-align: left;">
+                                            <tr style="background-color: white">
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">Tanggal Bayar</p>
+                                                </td>
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">$tglBayar</p>
+                                                </td>
+                                            </tr>
+                                            <tr style="background-color: white">
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">Pembayaran Via</p>
+                                                </td>
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">Agent Truemoney</p>
+                                                </td>
+                                            </tr>
+                                            <tr style="background-color: white">
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">Total Booking</p>
+                                                </td>
+                                                <td style="text-align: left; font-family: sans-serif; font-size: 11px; line-height: 20px; color: #555555; padding: 10px 10px 0;">
+                                                    <p style="margin: 0;">$hargaBooking</p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td height="100%" valign="top" width="100%" style="padding: 0 10px 40px 10px; background-color: #ffffff;">
+                            <h1 style="margin: 10px 0 10px 0; font-family: sans-serif; font-size: 11px; line-height: 30px; color: #333333; font-weight: normal;">Anda diharuskan menukarkan resi ini ke stasiun dengan tiket kereta api. Untuk setiap penumpang dewasa harus membawa kartu identitas masing-masing ketika menukarkan tiket</h1>
+                        </td>
+                    </tr>
+					<tr>
+                        <td height="100%" valign="top" width="100%" style="padding: 0 10px 40px 10px; background-color: #ffffff;">
+                            <h1 style="margin: 10px 0 10px 0; font-family: sans-serif; font-size: 11px; line-height: 30px; color: #333333; font-weight: normal;">Untuk checkin/boarding dilakukan 7x24 jam sebelum jadwal keberangkatan</h1>
+                        </td>
+                    </tr>
+					<tr>
+                        <td height="100%" valign="top" width="100%" style="padding: 0 10px 40px 10px; background-color: #ffffff;">
+                            <h1 style="margin: 10px 0 10px 0; font-family: sans-serif; font-size: 11px; line-height: 30px; color: #333333; font-weight: normal;">untuk informasi lebih lanjut, silahkan mengacu pada situs PT Kereta Api Indonesia, di kai.id atau dapat menghubungi contact center KAI 021-121</h1>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="background-color: #ffffff;">
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                <tr>
+                                    <td style="padding: 20px; font-family: sans-serif; font-size: 15px; line-height: 20px; color: #555555;">
+                                        <img src="http://inventory.truemoney.co.id/prod/picture/tm_logo.png" alt="" style="display: block;" />
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </center>
+    </body>
+</html>

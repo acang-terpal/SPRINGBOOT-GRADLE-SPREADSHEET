@@ -1,0 +1,83 @@
+<div id="page_content">
+    <div id="page_content_inner">
+
+        <h3 class="heading_b uk-margin-bottom">Bandwidth Monitor</h3>
+
+        <h4 class="heading_a uk-margin-bottom">HTB Table</h4>
+        <div class="uk-grid" data-uk-grid-margin>
+            <div class="uk-width-medium-1-6">
+                <a class="md-btn md-btn-primary md-btn-wave-light" href="javascript:void(0)">Add Rule</a>
+            </div>
+        </div>
+        <div class="md-card uk-margin-medium-bottom">
+            <div class="md-card-content">
+                <div class="uk-overflow-container">
+                    <table class="uk-table uk-table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Class ID</th>
+                                <th>Parent ID</th>
+                                <th>Avg Rate Upload</th>
+                                <th>Avg Rate Download</th>
+                                <th>Upload Limit At</th>
+                                <th>Upload Max Limit At</th>
+                                <th>Download Limit At</th>
+                                <th>Download Max Limit At</th>
+                                <th>Total Upload Bytes</th>
+                                <th>Total Download Bytes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <#list listData as data>
+                                <tr>
+                                    <td>
+                                        <div class="uk-text-primary" style="margin-left: ${data.tabSize}"
+                                            id="name_${data.name}">${data.name}</div>
+                                    </td>
+                                    <td>
+                                        <div style="margin-left: 0px" id="class_${data.name}">${data.class_id}</div>
+                                    </td>
+                                    <td>
+                                        <div style="margin-left: 0px" id="parent_${data.name}">${data.parent_id}</div>
+                                    </td>
+                                    <td>
+                                        <div style="margin-left: 0px" id="upload_${data.name}">${data.rate_upload}</div>
+                                    </td>
+                                    <td>
+                                        <div style="margin-left: 0px" id="download_${data.name}">${data.rate_download}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div style="margin-left: 0px" id="upload_limit_at_${data.name}">
+                                            ${data.upload_limit_at}</div>
+                                    </td>
+                                    <td>
+                                        <div style="margin-left: 0px" id="upload_max_limit_at_${data.name}">
+                                            ${data.upload_max_limit_at}</div>
+                                    </td>
+                                    <td>
+                                        <div style="margin-left: 0px" id="download_limit_at_${data.name}">
+                                            ${data.download_limit_at}</div>
+                                    </td>
+                                    <td>
+                                        <div style="margin-left: 0px" id="download_max_limit_at_${data.name}">
+                                            ${data.download_max_limit_at}</div>
+                                    </td>
+                                    <td>
+                                        <div style="margin-left: 0px" id="total_upload_bytes_${data.name}">
+                                            ${data.download_max_limit_at}</div>
+                                    </td>
+                                    <td>
+                                        <div style="margin-left: 0px" id="total_download_bytes_${data.name}">
+                                            ${data.download_max_limit_at}</div>
+                                    </td>
+                                </tr>
+                            </#list>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

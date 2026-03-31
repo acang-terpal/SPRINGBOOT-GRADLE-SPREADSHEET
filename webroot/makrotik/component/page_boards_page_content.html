@@ -1,0 +1,132 @@
+<style type="text/css">
+    .thumbnails li img{
+        width: 150px;
+    }
+</style>
+<div id="page_content">
+    <div id="page_content_inner">
+        <div id="listBoard" style="display: none;">
+            [
+            <#list jArrBoard as board>
+                ${board.board_id},
+            </#list> 
+            ]
+        </div> 
+        <!-- <div class="uk-grid uk-grid-width-medium-1-4" data-uk-grid-margin> -->
+        <div id="board_list" class="uk-grid-width-small-1-2 uk-grid-width-medium-1-3 uk-grid-width-large-1-4 uk-grid-width-xlarge-1-5 uk-margin-large-bottom hierarchical_show"
+            data-uk-grid="{gutter: 20}">
+            <#list jArrBoard as board>
+                <div id="container_${board.board_id}">
+                    <!-- <div id="random_progress" class="md-card md-card-hover md-btn-wave"> -->
+                    <div id="random_progress" class="md-card md-card-hover">
+                        <div class="md-card-toolbar" data-toolbar-progress="${board.percentage_finish}" data-toolbar-progress-steps="true">
+                            <div class="md-card-toolbar-actions">
+                                <div class="md-card-dropdown" data-uk-dropdown="{pos:'bottom-right'}">
+                                    <i class="md-icon material-icons">&#xE5D4;</i>
+                                    <div class="uk-dropdown">
+                                        <ul class="uk-nav">
+                                            <!-- <li class="md-btn-wave"><a href="#new_task" data-uk-modal="{ center:true }">Edit</a></li> -->
+                                            <li class="md-btn-wave" id="edit_${board.board_id}">
+                                                <a><i class="uk-icon-pencil uk-margin-small-right"></i> Edit</a>
+                                                <div id="data_${board.board_id}" style="display: none;">
+                                                    {"id" : "${board.board_id}", "title" : "${board.board_name}", "description" : "${board.board_description}", "background" : "${board.board_background}"}
+                                                </div>
+                                            </li>
+                                            <!-- <li class="md-btn-wave" id="edit_group_${board.board_id}"><a><i class="uk-icon-group uk-margin-small-right"></i> Member</a></li> -->
+                                            <li class="md-btn-wave" id="archieve_${board.board_id}"><a><i class="uk-icon-archive uk-margin-small-right"></i> Archive</a></li>
+                                            <li class="md-btn-wave" id="show_scrum_${board.board_id}"><a><i class="uk-icon-sliders uk-margin-small-right"></i> Show Scrum</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <h3 class="md-card-toolbar-heading-text">
+                                Progress <span id="progress_value">${board.percentage_finish}</span>%
+                            </h3>
+                        </div>
+                        <div class="md-card-content">
+                            <img id="board_background_${board.board_id}" src="${webRootUrl}assets/img/gallery/${board.board_background}" alt="">
+                            <div class="uk-margin-small-top">
+                                <strong id="board_name_${board.board_id}">${board.board_name}</strong><br>
+                                <span id="board_description_${board.board_id}" class="uk-text-muted">${board.board_description}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </#list>
+        </div>
+    </div>
+    <div class="uk-modal" id="update_task">
+        <div class="uk-modal-dialog">
+            <div class="uk-modal-header">
+                <h3 class="uk-modal-title">UPDATE BOARD</h3>
+            </div>
+            <form class="uk-form-stacked">
+                <div id="board_id_update" style="display: none;"></div>
+                <div class="uk-margin-medium-bottom">
+                    <label for="board_title">Title</label>
+                    <input type="text" class="md-input" id="board_title_update" name="board_title" />
+                </div>
+                <div class="uk-margin-medium-bottom">
+                    <label for="board_description">Description</label>
+                    <textarea class="md-input" id="board_description_update" name="board_description"></textarea>
+                </div>
+                <div class="uk-margin-medium-bottom">
+                    <label for="image-selector-update">Board Background</label>
+                    <select id="image-selector-update" name="image-selector-update" class="image-picker show-html">
+                        <option value=""></option>
+                        <option data-img-src="${webRootUrl}assets/img/gallery/Image01.jpg" value="Image01.jpg">Image01.jpg</option>
+                        <option selected data-img-src="${webRootUrl}assets/img/gallery/Image02.jpg" value="Image02.jpg">Image02.jpg</option>
+                        <option data-img-src="${webRootUrl}assets/img/gallery/Image03.jpg" value="Image03.jpg">Image03.jpg</option>
+                        <option data-img-src="${webRootUrl}assets/img/gallery/Image04.jpg" value="Image04.jpg">Image04.jpg</option>
+                        <option data-img-src="${webRootUrl}assets/img/gallery/Image05.jpg" value="Image05.jpg">Image05.jpg</option>
+                        <option data-img-src="${webRootUrl}assets/img/gallery/Image06.jpg" value="Image06.jpg">Image06.jpg</option>
+                      </select>
+                </div>
+                <div class="uk-modal-footer uk-text-right">
+                    <button type="button" class="md-btn md-btn-flat uk-modal-close md-btn-wave">Close</button>
+                    <button
+                        type="button" class="md-btn md-btn-flat md-btn-flat-primary md-btn-wave"
+                        id="board_update">Update Board</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="uk-modal" id="new_board">
+        <div class="uk-modal-dialog">
+            <div class="uk-modal-header">
+                <h3 class="uk-modal-title">NEW BOARD</h3>
+            </div>
+            <form class="uk-form-stacked">
+                <div class="uk-margin-medium-bottom">
+                    <label for="board_new_title">Title</label>
+                    <input type="text" class="md-input" id="board_new_title" name="board_new_title" />
+                </div>
+                <div class="uk-margin-medium-bottom">
+                    <label for="board_new_description">Description</label>
+                    <textarea class="md-input" id="board_new_description" name="board_new_description"></textarea>
+                </div>
+                <div class="uk-margin-medium-bottom">
+                    <label for="image-selector-insert">Board Background</label>
+                    <select id="image-selector-insert" name="image-selector-insert" class="image-picker show-html">
+                        <option value=""></option>
+                        <option selected data-img-src="${webRootUrl}assets/img/gallery/Image01.jpg" value="Image01.jpg">Image01.jpg</option>
+                        <option data-img-src="${webRootUrl}assets/img/gallery/Image02.jpg" value="Image02.jpg">Image02.jpg</option>
+                        <option data-img-src="${webRootUrl}assets/img/gallery/Image03.jpg" value="Image03.jpg">Image03.jpg</option>
+                        <option data-img-src="${webRootUrl}assets/img/gallery/Image04.jpg" value="Image04.jpg">Image04.jpg</option>
+                        <option data-img-src="${webRootUrl}assets/img/gallery/Image05.jpg" value="Image05.jpg">Image05.jpg</option>
+                        <option data-img-src="${webRootUrl}assets/img/gallery/Image06.jpg" value="Image06.jpg">Image06.jpg</option>
+                      </select>
+                </div>
+                <div class="uk-modal-footer uk-text-right">
+                    <button type="button" class="md-btn md-btn-flat uk-modal-close md-btn-wave">Close</button>
+                    <button type="button" class="md-btn md-btn-flat md-btn-flat-primary md-btn-wave"
+                        id="new_board_save">
+                        Add Board
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- java script is on page_boards.html on bottom -->

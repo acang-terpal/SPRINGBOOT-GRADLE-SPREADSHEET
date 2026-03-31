@@ -1,0 +1,95 @@
+<div id="page_content">
+    <div id="page_content_inner">
+        <div id="listMember" style="display: none;">
+            [
+            <#list jArrMember as member>
+                ${member.account_id},
+            </#list> 
+            ]
+        </div> 
+        <div class="md-card-list-wrapper" id="mailbox">
+            <div class="uk-width-large-8-10 uk-container-center">
+                <div class="md-card-list">
+                    <ul class="hierarchical_slide" id="container_member">
+                        <#list jArrMember as member>
+                            <li id="container_${member.account_id}">
+                                <div class="md-card-list-item-menu" data-uk-dropdown="{mode:'click',pos:'bottom-right'}">
+                                    <a href="#" class="md-icon material-icons">&#xE5D4;</a>
+                                    <div class="uk-dropdown uk-dropdown-small">
+                                        <ul class="uk-nav uk-nav-dropdown">
+                                            <li class="uk-nav-header">Set Role As</li>
+                                            <li><a id="as_admin_${member.account_id}">Admin</a></li>
+                                            <li><a id="as_watcher_${member.account_id}">Watcher</a></li>
+                                            <li><a id="as_member_${member.account_id}">Member</a></li>
+                                            <li class="uk-nav-divider"></li>
+                                            <li><a id="delete_${member.account_id}"><i class="material-icons">&#xE872;</i> Delete</a></li>
+                                            <div id="data_${member.account_id}" style="display: none;">
+                                                {"account_id" : "${member.account_id}", "account_name" : "${member.account_name}", "account_email" : "${member.account_email}"}
+                                            </div>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <!-- <div class="md-card-list-item-select">
+                                    <input type="checkbox" data-md-icheck />
+                                </div> -->
+                                <div class="md-card-list-item-avatar-wrapper">
+                                    <span class="md-card-list-item-avatar md-bg-light-green">ne</span>
+                                </div>
+                                <div class="md-card-list-item-sender">
+                                    <span>${member.account_name}</span>
+                                </div>
+                                <div class="md-card-list-item-subject">
+                                    <span>${member.account_email}
+                                        <div style="float: right;" id="as_${member.account_id}">As ${member.level_name}</div>
+                                    </span>
+                                </div>
+                            </li>
+                        </#list>
+                        <!-- <li>
+                            <div class="md-card-list-item-menu" data-uk-dropdown="{mode:'click',pos:'bottom-right'}">
+                                <a href="#" class="md-icon material-icons">&#xE5D4;</a>
+                                <div class="uk-dropdown uk-dropdown-small">
+                                    <ul class="uk-nav">
+                                        <li><a href="#"><i class="material-icons">&#xE15E;</i> Chat</a></li>
+                                        <li><a href="#"><i class="material-icons">&#xE872;</i> Delete</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="md-card-list-item-select">
+                                <input type="checkbox" data-md-icheck />
+                            </div>
+                            <div class="md-card-list-item-avatar-wrapper">
+                                <img src="${webRootUrl}assets/img/avatars/avatar_05_tn.png" class="md-card-list-item-avatar" alt="" />
+                            </div>
+                            <div class="md-card-list-item-sender">
+                                <span>raynor.carter@walsh.com</span>
+                            </div>
+                        </li> -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="uk-modal" id="add_member">
+        <div class="uk-modal-dialog">
+            <div class="uk-modal-header">
+                <h3 class="uk-modal-title">NEW MEMBER</h3>
+            </div>
+            <form class="uk-form-stacked">
+                <div class="uk-margin-medium-bottom">
+                    <label for="account_email">Email</label>
+                    <input type="text" class="md-input" id="account_email" name="account_email" />
+                </div>
+                <div class="uk-modal-footer uk-text-right">
+                    <button type="button" class="md-btn md-btn-flat uk-modal-close md-btn-wave">Close</button>
+                    <button type="button" class="md-btn md-btn-flat md-btn-flat-primary md-btn-wave"
+                        id="submit_new_member">
+                        Add Member
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- java script is on page_member.html on bottom -->

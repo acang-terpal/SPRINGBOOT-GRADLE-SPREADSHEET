@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mkn>
+    <commonServer>
+        <portAdapter>20000</portAdapter>
+        <maxThreads>10240</maxThreads>
+        <minThreads>10</minThreads>
+        <lowThreads>320</lowThreads>
+        <maxQueued>-1</maxQueued> <!-- -1 never reject -->
+        <maxTotalConnections>100000</maxTotalConnections>
+        <maxIoIdleTimeMs>320000</maxIoIdleTimeMs>
+        <pathUri>/</pathUri> <!-- not use on springboot -->
+        <sessionTtl>1800</sessionTtl> <!--in second, 1800 = 30 minute-->
+        <timeRemoveBeforeSessionDelete>0</timeRemoveBeforeSessionDelete> <!--in ms, 120000 = 2 minute-->
+    </commonServer>
+
+    <databasePgsqlCecenet>
+        <ip>ngadi-ngadi.my.id</ip>
+        <port>5432</port>
+        <database>cecenet</database>
+        <user>postgres</user>
+        <password>n64d1n64d1</password>
+    </databasePgsqlCecenet>
+
+    <databasePgsqlMamen>
+        <ip>ngadi-ngadi.my.id</ip>
+        <port>5432</port>
+        <database>mamen</database>
+        <user>postgres</user>
+        <password>n64d1n64d1</password>
+    </databasePgsqlMamen>
+
+    <databasePgsqlSession>
+        <ip>ngadi-ngadi.my.id</ip>
+        <port>5432</port>
+        <database>SESSION</database>
+        <user>postgres</user>
+        <password>n64d1n64d1</password>
+    </databasePgsqlSession>
+
+    <databaseMysql>
+        <ip>172.16.80.122</ip>
+        <port>3306</port>
+        <database>API_Pulsa</database>
+        <user>tmn_aldi</user>
+        <password>P@ssw0rd</password>
+    </databaseMysql>
+
+    <databaseSqlite>
+<!--        <dbFilePath>Z:\WORK\NgadiNgadi\CECENET\BACKEND\MAKROTIK\webroot\makrotik.db</dbFilePath>-->
+<!--        <dbFilePath>D:\WORK\PROJECT\makrotik\webroot\makrotik-rumah.db</dbFilePath>-->
+        <dbFilePath>/home/acang/Work/Project/makrotik/webroot/makrotik-rumah.db</dbFilePath>
+        <user>acang</user>
+        <password>P@ssw0rd</password>
+    </databaseSqlite>
+
+    <encryption>
+        <!--<key>&#38;&#37;yhdk&#40;&#41;83h&#36;&#35;ksP</key>--> <!--&%yhdk()83h$#ksP--> <!-- prod -->
+        <!--<iv>L&#38;hgYr&#41;&#36;&#33;&#38;nxbTH&#38;</iv>--> <!--L&hgYr)$!&nxbTH&--> <!-- prod -->
+        <key>1234567890123456</key><!-- dev -->
+        <iv>1234567890123456</iv><!-- dev -->
+        <keyDb>key1234567890987</keyDb>
+        <ivDb>iv12345678909876</ivDb>
+        <!-- true/false -->
+        <encRequest>true</encRequest>
+        <encResponse>true</encResponse>
+    </encryption>
+    <misc>
+        <scaleImgSize>200</scaleImgSize>
+        <!-- true/false -->
+        <logStream>true</logStream>
+<!--        <masterFolder>Z:\WORK\NgadiNgadi\CECENET\BACKEND\MAKROTIK\</masterFolder>-->
+        <masterFolder>/home/acang/Work/Project/makrotik/webroot/</masterFolder>
+        <sessionUrl>http://ec2-18-139-197-17.ap-southeast-1.compute.amazonaws.com:40123/Session</sessionUrl>
+    </misc>
+    <ftpServerInventory>
+        <ip>inventory.inception.co.id</ip>
+        <port>21</port>
+        <user>velo</user>
+        <password>&#86;&#51;&#108;&#48;&#102;&#116;&#112;&#45;&#50;&#48;&#49;&#57;</password>
+        <path>/devel/remit/</path>
+        <!--        <path>/prod/remit/</path>-->
+    </ftpServerInventory>
+</mkn>

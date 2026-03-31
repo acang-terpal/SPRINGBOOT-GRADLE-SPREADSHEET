@@ -1,0 +1,445 @@
+<style>
+.md-list>li>.md-list-content>.md-list-heading {
+    margin: 0;
+    position: absolute;
+    top: 35%;
+    -ms-transform: translateY(-50%);
+    ransform: translateY(-50%);
+}
+</style>
+<div id="page_content" class="uk-height-1-1">  
+    <div id="container" class="scrum_board_overflow" style="background: url(${webRootUrl}assets/img/gallery/${board_background}); background-size: cover;">
+        <div id="scrum_board" class="uk-clearfix">
+            <#list jArrColumn as column>
+                <div id="column_container_${column.column_id}">
+                    <div id="data_${column.column_id}" style="display: none;">
+                        {"id" : "${column.column_id}", "name" : "${column.column_name}"}
+                    </div>
+                    <div class="scrum_column_heading_wrapper">
+                        <div id="column_name_${column.column_id}" class="scrum_column_heading"> ${column.column_name}</div>
+                        <div class="uk-button-dropdown" data-uk-dropdown="{mode:'click',pos:'bottom-right'}">
+                            <i class="md-icon material-icons">&#xE5D4;</i>
+                            <div class="uk-dropdown uk-dropdown-small">
+                                <ul class="uk-nav uk-nav-dropdown">
+                                    <li><a id="button_new_task_${column.column_id}">Add task</a></li>
+                                    <li class="uk-nav-divider"></li>
+                                    <li><a id="button_edit_column_${column.column_id}">Edit Column</a></li>
+                                    <li><a id="button_delete_column_${column.column_id}" class="uk-text-danger">Delete Column</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="scrum_column">
+                        <div id="scrum_column_${column.column_id}">
+                            <#list jArrTask as task>
+                                <#if task.column_id == column.column_id>
+                                    <div id="${column.column_id}_task_${task.task_id}">
+                                        <div id="data_task_${task.task_id}" style="display: none;">
+                                            {"id" : "${task.task_id}", "name" : "${task.task_name}"}
+                                        </div>
+                                        <div class="scrum_task minor">
+                                            <h3 id="scrum_task_title_${task.task_id}" class="scrum_task_title">
+                                                <a id="scrum_task_anchor_${task.task_id}">${task.task_name}</a>
+                                                <!-- <i id="${column.column_id}_scrum_task_delete_${task.task_id}" class="md-icon material-icons md-color-blue-grey-500" style="float: right;">&#xe872;</i> -->
+                                                <div class="uk-button-dropdown" data-uk-dropdown="{pos:'bottom-right'}" style="float: right;">
+                                                    <i class="md-icon material-icons">&#xE5D4;</i>
+                                                    <div class="uk-dropdown">
+                                                        <ul class="uk-nav">
+                                                            <li class="md-btn-wave" id="${column.column_id}_scrum_task_edit_${task.task_id}"><a><i class="uk-icon-pencil uk-margin-small-right"></i> Edit</a></li>
+                                                            <li class="md-btn-wave" id="${column.column_id}_scrum_task_delete_${task.task_id}"><a><i class="uk-icon-archive uk-margin-small-right"></i> Archive</a></li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </h3>
+                                            <p id="scrum_task_description_${task.task_id}" class="scrum_task_description">${task.task_description}</p>
+                                            <p id="scrum_task_info_${task.task_id}" class="scrum_task_info"><span class="uk-text-muted">Assignee:</span> 
+                                                <#list task.account as account>
+                                                    <a>${account.account_name}</a><#if account?has_next?c == 'true'>,</#if>
+                                                </#list>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </#if>
+                            </#list>
+                        </div>
+                    </div>
+                </div>
+            </#list>
+        </div>
+    </div>
+    <div id="listColumn" style="display: none;">
+        [
+        <#list jArrColumn as column>
+            ${column.column_id},
+        </#list> 
+        ]
+    </div> 
+    <div id="listTask" style="display: none;">
+        [
+        <#list jArrTask as task>
+            ${task.task_id},
+        </#list> 
+        ]
+    </div> 
+    <div id="jArrMemberStr" style="display: none;">
+        ${jArrMemberStr}
+    </div>
+</div>
+
+<div class="uk-modal" id="show_task">
+    <div class="uk-modal-dialog">
+        <div class="uk-modal-header">
+            <span class="uk-badge uk-badge-danger uk-float-right">Blocker</span>
+            <h3 class="uk-modal-title">TASK DETAIL</h3>
+        </div>
+        <form class="uk-form-stacked">
+            <div class="uk-margin-medium-bottom">
+                <p class="uk-margin-small-bottom uk-text-muted">Title</p>
+                <p class="uk-margin-remove uk-text-large" id="show_task_name"></p>
+            </div>
+            <div class="uk-margin-medium-bottom">
+                <p class="uk-margin-small-bottom uk-text-muted">Description</p>
+                <p class="uk-margin-remove" id="show_task_description"></p>
+            </div>
+            <div class="uk-margin-medium-bottom">
+                <p class="uk-margin-small-bottom uk-text-muted">Assignee</p>
+                <p class="uk-margin-remove" id="show_task_assignee"></p>
+            </div>
+            <div class="uk-margin-medium-bottom">
+                <p class="uk-margin-small-bottom uk-text-muted">Execution Date</p>
+                <p class="uk-margin-remove" id="show_start_date"></p>
+                <p class="uk-margin-remove" id="show_end_date"></p>
+            </div>
+            <div class="uk-margin-medium-bottom">
+                <p class="uk-margin-small-bottom uk-text-muted">To Do</p>
+                <ul id="show_task_to_do" class="md-list md-list-addon uk-margin-small-bottom uk-nestable" data-uk-nestable="{ maxDepth:2,handleClass:'md-list-content'}">
+                    <!-- <li class="uk-nestable-item">
+                        <div class="md-list-addon-element">
+                            <input type="checkbox" data-md-icheck checked/>
+                        </div>
+                        <div class="md-list-content">
+                            <span class="md-list-heading">Important Task</span>
+                        </div>
+                    </li>
+                    <li class="uk-nestable-item">
+                        <div class="md-list-addon-element">
+                            <input type="checkbox" data-md-icheck />
+                        </div>
+                        <div class="md-list-content">
+                            <span class="md-list-heading">Another Task</span>
+                        </div>
+                    </li> -->
+                </ul>
+            </div>
+            <div class="uk-modal-footer uk-text-right">
+                <button id="close_show_task" type="button" class="md-btn md-btn-flat uk-modal-close md-btn-wave">Close</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="uk-modal" id="update_column">
+    <div id="update_column_id" style="display: none;"></div>
+    <div class="uk-modal-dialog">
+        <div class="uk-modal-header">
+            <!-- <span class="uk-badge uk-badge-danger uk-float-right">Blocker</span> -->
+            <h3 class="uk-modal-title">UPDATE COLUMN</h3>
+        </div>
+        <div class="uk-margin-medium-bottom">
+            <label for="update_column_input">Column</label>
+            <input type="text" class="md-input" id="update_column_input" name="update_column_input"/>
+        </div>
+        <div class="uk-modal-footer uk-text-right">
+            <button id="submit_update_column" type="button" class="md-btn md-btn-flat uk-modal-close md-btn-wave">Update Column</button>
+        </div>
+    </div>
+</div>
+
+<div class="uk-modal" id="new_column">
+    <div class="uk-modal-dialog">
+        <div class="uk-modal-header">
+            <!-- <span class="uk-badge uk-badge-danger uk-float-right">Blocker</span> -->
+            <h3 class="uk-modal-title">NEW COLUMN</h3>
+        </div>
+        <div class="uk-margin-medium-bottom">
+            <label for="new_column_input">Column</label>
+            <input type="text" class="md-input" id="new_column_input" name="new_column_input" />
+        </div>
+        <div class="uk-modal-footer uk-text-right">
+            <button id="submit_new_column" type="button" class="md-btn md-btn-flat uk-modal-close md-btn-wave">Add Column</button>
+        </div>
+    </div>
+</div>
+
+<div class="uk-modal" id="new_task">
+    <div id="new_task_column_id" style="display: none;"></div>
+    <!-- <div class="uk-modal-dialog uk-modal-dialog-large"> -->
+    <div class="uk-modal-dialog">
+        <div class="uk-modal-header">
+            <h3 id="header_new_task" class="uk-modal-title">New Task</h3>
+        </div>
+        <div class="uk-margin-medium-bottom">
+            <div class="uk-grid">
+                <div class="uk-width-1-1">
+                    <div class="md-card">
+                        <div class="md-card-content">
+                            <label for="task_title">Title</label>
+                            <input type="text" class="md-input" id="task_title" name="snippet_title" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="uk-margin-medium-bottom">
+            <div class="uk-grid">
+                <div class="uk-width-1-1">
+                    <div class="md-card">
+                        <div class="md-card-content">
+                            <label for="task_description">Description</label>
+                            <textarea class="md-input" id="task_description" name="task_description"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="uk-margin-medium-bottom">
+            <div class="uk-grid">
+                <div class="uk-width-1-1">
+                    <div class="md-card">
+                        <div class="md-card-content">
+                            <label for="task_assignee" class="uk-form-label">Assignee</label>
+                            <!-- <select class="uk-form-width-large" name="task_assignee" id="task_assignee" data-md-selectize-inline>
+                                <#list jArrMember as member>
+                                    <option value="${member.account_id}">${member.account_name}</option>
+                                </#list> 
+                            </select> -->
+                            <select id="task_assignee" name="task_assignee" multiple>
+                                <#list jArrMember as member>
+                                    <option value="${member.account_id}">${member.account_name}</option>
+                                </#list> 
+                                <!-- <option value="2" selected>Venus</option>
+                                <option value="3" selected>Earth</option> -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="uk-margin-medium-bottom">
+            <div class="uk-grid">
+                <div class="uk-width-1-1">
+                    <div class="md-card">
+                        <div class="md-card-content">
+                            <label for="date_picker" class="uk-form-label">Execution Date</label>
+                            <div class="uk-grid" data-uk-grid-margin>
+                                <div class="uk-width-large-1-3 uk-width-medium-1-1">
+                                    <div class="uk-input-group">
+                                        <span class="uk-input-group-addon"><i class="uk-input-group-icon uk-icon-calendar"></i></span>
+                                        <label for="uk_dp_start">Start Date</label>
+                                        <input readonly class="md-input" type="text" id="uk_dp_start">
+                                    </div>
+                                </div>
+                                <div class="uk-width-large-1-3 uk-width-medium-1-1">
+                                    <div class="uk-input-group">
+                                        <span class="uk-input-group-addon"><i class="uk-input-group-icon uk-icon-calendar"></i></span>
+                                        <label for="uk_dp_end">End Date</label>
+                                        <input readonly class="md-input" type="text" id="uk_dp_end">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="uk-margin-medium-bottom">
+            <div class="uk-grid">
+                <div class="uk-width-1-1">
+                    <div class="md-card">
+                        <div id="todo_list" class="md-card-content">
+                            <label for="task_description">Todo List</label>
+                            <ul id="new_task_to_do" class="md-list md-list-addon uk-margin-small-bottom uk-nestable" data-uk-nestable="{ maxDepth:2,handleClass:'md-list-content'}">
+                                <!-- <li class="uk-nestable-item">
+                                    <div class="md-list-addon-element">
+                                        <input type="checkbox" data-md-icheck />
+                                    </div>
+                                    <div class="md-list-content">
+                                        <a href="#" class="md-list-action"><i class="md-icon material-icons">&#xE872;</i></a>
+                                        <span class="md-list-heading uk-text-danger">Important Task</span>
+                                        <span class="uk-text-small uk-text-danger">Beatae ipsum nihil reiciendis quasi quibusdam est doloribus.</span>
+                                    </div>
+                                </li>
+                                <li class="uk-nestable-item">
+                                    <div class="md-list-addon-element">
+                                        <input type="checkbox" data-md-icheck />
+                                    </div>
+                                    <div class="md-list-content">
+                                        <a href="#" class="md-list-action"><i class="md-icon material-icons">&#xE872;</i></a>
+                                        <span class="md-list-heading">Another Task</span>
+                                        <span class="uk-text-small uk-text-muted">Ea atque iure id deserunt minus vel vel eaque.</span>
+                                    </div>
+                                </li> -->
+                            </ul>
+                            
+                            <div id="container_input_todo" style="display: none;">
+                                <label for="input_todo">Todo</label>
+                                <input type="text" class="md-input" id="input_todo" name="input_todo"/>
+                            </div>
+                            <a id="add_new_todo" class="md-btn md-btn-flat md-btn-flat-primary md-btn-wave">Add new todo</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- <div class="uk-margin-medium-bottom">
+            <label for="task_priority" class="uk-form-label">Priority</label>
+            <div>
+                <span class="icheck-inline">
+                    <input type="radio" name="task_priority" id="task_priority_minor" data-md-icheck />
+                    <label for="task_priority_minor"
+                        class="inline-label uk-badge uk-badge-success">MINOR</label>
+                </span>
+                <span class="icheck-inline">
+                    <input type="radio" name="task_priority" id="task_priority_critical" data-md-icheck />
+                    <label for="task_priority_critical"
+                        class="inline-label uk-badge uk-badge-warning">CRITICAL</label>
+                </span>
+                <span class="icheck-inline">
+                    <input type="radio" name="task_priority" id="task_priority_blocker" data-md-icheck />
+                    <label for="task_priority_blocker"
+                        class="inline-label uk-badge uk-badge-danger">BLOCKER</label>
+                </span>
+            </div>
+        </div> -->
+        <div class="uk-modal-footer uk-text-right">
+            <button type="button" class="md-btn md-btn-flat uk-modal-close md-btn-wave">Close</button>
+            <button type="button" class="md-btn md-btn-flat md-btn-flat-primary md-btn-wave"
+                id="submit_new_task">
+                Add Task
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<div class="uk-modal" id="update_task">
+    <div id="update_task_id" style="display: none;"></div>
+    <div class="uk-modal-dialog">
+        <div class="uk-modal-header">
+            <h3 id="header_update_task" class="uk-modal-title">Update Task</h3>
+        </div>
+        <div class="uk-margin-medium-bottom">
+            <div class="uk-grid">
+                <div class="uk-width-1-1">
+                    <div class="md-card">
+                        <div class="md-card-content">
+                            <label for="update_task_title">Title</label>
+                            <input type="text" class="md-input" id="update_task_title" name="update_task_title" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="uk-margin-medium-bottom">
+            <div class="uk-grid">
+                <div class="uk-width-1-1">
+                    <div class="md-card">
+                        <div class="md-card-content">
+                            <label for="update_task_description">Description</label>
+                            <textarea class="md-input" id="update_task_description" name="update_task_description"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="uk-margin-medium-bottom">
+            <div class="uk-grid">
+                <div class="uk-width-1-1">
+                    <div class="md-card">
+                        <div class="md-card-content">
+                            <label for="update_task_assignee" class="uk-form-label">Assignee</label>
+                            <select id="update_task_assignee" name="update_task_assignee" multiple>
+                                <#list jArrMember as member>
+                                    <option value="${member.account_id}">${member.account_name}</option>
+                                </#list> 
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="uk-margin-medium-bottom">
+            <div class="uk-grid">
+                <div class="uk-width-1-1">
+                    <div class="md-card">
+                        <div class="md-card-content">
+                            <label for="date_picker" class="uk-form-label">Execution Date</label>
+                            <div class="uk-grid" data-uk-grid-margin>
+                                <div class="uk-width-large-1-3 uk-width-medium-1-1">
+                                    <div class="uk-input-group">
+                                        <span class="uk-input-group-addon"><i class="uk-input-group-icon uk-icon-calendar"></i></span>
+                                        <label for="update_uk_dp_start">Start Date</label>
+                                        <input readonly class="md-input" type="text" id="update_uk_dp_start">
+                                    </div>
+                                </div>
+                                <div class="uk-width-large-1-3 uk-width-medium-1-1">
+                                    <div class="uk-input-group">
+                                        <span class="uk-input-group-addon"><i class="uk-input-group-icon uk-icon-calendar"></i></span>
+                                        <label for="update_uk_dp_end">End Date</label>
+                                        <input readonly class="md-input" type="text" id="update_uk_dp_end">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="uk-margin-medium-bottom">
+            <div class="uk-grid">
+                <div class="uk-width-1-1">
+                    <div class="md-card">
+                        <div id="update_todo_list" class="md-card-content">
+                            <label for="task_description">Todo List</label>
+                            <ul id="update_task_to_do" class="md-list md-list-addon uk-margin-small-bottom uk-nestable" data-uk-nestable="{ maxDepth:2,handleClass:'md-list-content'}">
+                                <!-- <li class="uk-nestable-item">
+                                    <div class="md-list-addon-element">
+                                        <input type="checkbox" data-md-icheck />
+                                    </div>
+                                    <div class="md-list-content">
+                                        <a href="#" class="md-list-action"><i class="md-icon material-icons">&#xE872;</i></a>
+                                        <span class="md-list-heading uk-text-danger">Important Task</span>
+                                        <span class="uk-text-small uk-text-danger">Beatae ipsum nihil reiciendis quasi quibusdam est doloribus.</span>
+                                    </div>
+                                </li>
+                                <li class="uk-nestable-item">
+                                    <div class="md-list-addon-element">
+                                        <input type="checkbox" data-md-icheck />
+                                    </div>
+                                    <div class="md-list-content">
+                                        <a href="#" class="md-list-action"><i class="md-icon material-icons">&#xE872;</i></a>
+                                        <span class="md-list-heading">Another Task</span>
+                                        <span class="uk-text-small uk-text-muted">Ea atque iure id deserunt minus vel vel eaque.</span>
+                                    </div>
+                                </li> -->
+                            </ul>
+                            
+                            <div id="container_update_input_todo" style="display: none;">
+                                <label for="update_input_todo">Todo</label>
+                                <input type="text" class="md-input" id="update_input_todo" name="update_input_todo"/>
+                            </div>
+                            <a id="update_todo" class="md-btn md-btn-flat md-btn-flat-primary md-btn-wave">Add new todo</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="uk-modal-footer uk-text-right">
+            <button type="button" class="md-btn md-btn-flat uk-modal-close md-btn-wave">Close</button>
+            <button type="button" class="md-btn md-btn-flat md-btn-flat-primary md-btn-wave"
+                id="submit_update_task">
+                Update Task
+            </button>
+        </div>
+    </div>
+</div>
