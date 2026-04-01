@@ -43,7 +43,7 @@ public class ResourceSpreadSheet {
         this.freeMarkerCfg = freeMarkerCfg;
     }
 
-    @RequestMapping(path = "/makrotik/**")
+    @RequestMapping(path = "/SpreadSheet/**")
     public ResponseEntity<StreamingResponseBody> index(HttpServletRequest request) {
         ResponseEntity<StreamingResponseBody> response = ResponseEntity.status(HttpStatus.BAD_GATEWAY).build();
         try {

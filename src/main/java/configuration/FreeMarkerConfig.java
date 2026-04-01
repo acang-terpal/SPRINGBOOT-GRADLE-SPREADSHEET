@@ -21,22 +21,25 @@ public class FreeMarkerConfig {
         this.freeMarkerCfgMamenComponent = new freemarker.template.Configuration(freemarker.template.Configuration.VERSION_2_3_31);
         try {
             //webroot
-            freeMarkerCfgMamen.setDirectoryForTemplateLoading(new File(Main.conf.getWorkDir() + File.separator + "webroot" + File.separator + "makrotik"));
+            freeMarkerCfgMamen.setDirectoryForTemplateLoading(new File(Main.conf.getWorkDir() + File.separator + "webroot" + File.separator + "SpreadSheet"));
             freeMarkerCfgMamen.setDefaultEncoding("UTF-8");
             freeMarkerCfgMamen.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
             freeMarkerCfgMamen.setLogTemplateExceptions(false);
             freeMarkerCfgMamen.setWrapUncheckedExceptions(true);
             freeMarkerCfgMamen.setFallbackOnNullLoopVariable(false);
-            freeMarkerCfgMamen.setCacheStorage(new NullCacheStorage());
+            freeMarkerCfgMamen.setCacheStorage(new freemarker.cache.MruCacheStorage(20, 250));
+            // Cek update template setiap 5 detik (0 kalau mau selamanya di cache)
+            freeMarkerCfgMamen.setTemplateUpdateDelayMilliseconds(5000);
 
             //component
-            freeMarkerCfgMamenComponent.setDirectoryForTemplateLoading(new File(Main.conf.getWorkDir() + File.separator + "webroot" + File.separator + "makrotik" + File.separator + "component"));
+            freeMarkerCfgMamenComponent.setDirectoryForTemplateLoading(new File(Main.conf.getWorkDir() + File.separator + "webroot" + File.separator + "SpreadSheet" + File.separator + "component"));
             freeMarkerCfgMamenComponent.setDefaultEncoding("UTF-8");
             freeMarkerCfgMamenComponent.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
             freeMarkerCfgMamenComponent.setLogTemplateExceptions(false);
             freeMarkerCfgMamenComponent.setWrapUncheckedExceptions(true);
             freeMarkerCfgMamenComponent.setFallbackOnNullLoopVariable(false);
-            freeMarkerCfgMamenComponent.setCacheStorage(new NullCacheStorage());
+            freeMarkerCfgMamenComponent.setCacheStorage(new freemarker.cache.MruCacheStorage(20, 250));
+            freeMarkerCfgMamenComponent.setTemplateUpdateDelayMilliseconds(5000);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

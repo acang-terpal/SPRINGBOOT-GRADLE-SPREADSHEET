@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <!-- Path log sesuai log4j kamu -->
-    <property name="LOG_PATH" value="/var/log/spreadsheet/app-logs" />
+<!--    <property name="LOG_PATH" value="/var/log/spreadsheet/app-logs" />-->
+    <!-- Ambil nilai dari application.properties -->
+    <springProperty scope="context" name="LOG_PATH" source="logging.path.app" defaultValue="app-logs"/>
 
     <!-- 1. Console Appender (stdout) -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">

@@ -53,7 +53,7 @@ public class ResourceIndex {
 //                URI landingPage = new URI(baseUrl + "/SpreadSheet/ControllerSpreadSheetDashboard/getDashboard/index?level_id=1");
 //                httpHeaders.setLocation(landingPage);
 //            }
-            URI landingPage = new URI(baseUrl + "/makrotik/ControllerSpreadSheetDashboard/getDashboard/index?level_id=1");
+            URI landingPage = new URI(baseUrl + "/SpreadSheet/ControllerSpreadSheetDashboard/getDashboard/index?level_id=1");
             httpHeaders.setLocation(landingPage);
         } catch (Exception ex) {
             ex.printStackTrace();
