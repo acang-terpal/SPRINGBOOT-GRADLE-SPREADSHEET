@@ -582,6 +582,24 @@ public class Helper {
 //            System.out.println("Value : " + request.getParameter(params));
             objParams.put(params, request.getParameter(params));
         }
+        if (!request.getParameterNames().hasMoreElements()) {
+            // 2. BACA JSON BODY (Karena getParameter pasti kosong buat JSON)
+            try {
+                // Pakai Scanner atau IOUtils buat baca String dari request body
+                String body = new java.util.Scanner(request.getInputStream(), StandardCharsets.UTF_8).useDelimiter("\\A").next();
+
+                if (body != null && !body.isEmpty()) {
+                    // Convert String JSON ke JSONObject
+                    org.json.JSONObject jBody = new org.json.JSONObject(body);
+                    // Pindahin isi JSON ke objParams
+                    objParams.put("dataSource", jBody.getJSONArray("dataSource").toList());
+                    objParams.put("sheetName", jBody.getString("sheetName"));
+//                System.out.println(this.objParams.toString());
+                }
+            } catch (Exception e) {
+                System.err.println("Gagal baca JSON Body: " + e.getMessage());
+            }
+        }
 
         String[] uriSplit = fullUri.split("/");
 //        for (String uri : uriSplit) {

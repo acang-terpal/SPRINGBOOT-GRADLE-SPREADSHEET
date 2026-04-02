@@ -59,7 +59,7 @@ dependencies {
 
     // --- APACHE COMMONS & UTILS ---
     implementation("commons-codec:commons-codec:1.8")
-    implementation("commons-io:commons-io:2.5")
+    implementation("commons-io:commons-io:2.16.1")
     implementation("commons-lang:commons-lang:2.6")
     implementation("commons-collections:commons-collections:3.2.1")
     implementation("commons-logging:commons-logging:1.1.2")
@@ -68,12 +68,11 @@ dependencies {
     implementation("com.google.guava:guava:16.0")
 
     // --- APACHE POI (Office Docs) ---
-    val poiVersion = "3.15"
+    val poiVersion = "5.4.0"
     implementation("org.apache.poi:poi:$poiVersion")
     implementation("org.apache.poi:poi-examples:$poiVersion")
     implementation("org.apache.poi:poi-excelant:$poiVersion")
     implementation("org.apache.poi:poi-ooxml:$poiVersion")
-    implementation("org.apache.poi:poi-ooxml-schemas:$poiVersion")
     implementation("org.apache.poi:poi-scratchpad:$poiVersion")
 
     // --- NETWORKING & API CLIENTS ---

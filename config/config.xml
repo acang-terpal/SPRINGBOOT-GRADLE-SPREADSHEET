@@ -46,9 +46,9 @@
     </databaseMysql>
 
     <databaseSqlite>
-<!--        <dbFilePath>Z:\WORK\NgadiNgadi\CECENET\BACKEND\MAKROTIK\webroot\makrotik.db</dbFilePath>-->
-<!--        <dbFilePath>D:\WORK\PROJECT\makrotik\webroot\makrotik-rumah.db</dbFilePath>-->
-        <dbFilePath>/home/acang/Work/Project/makrotik/webroot/makrotik-rumah.db</dbFilePath>
+<!--        <dbFilePath>Z:\WORK\NgadiNgadi\CECENET\BACKEND\SPRINGBOOT-GRADLE-SPREADSHEET\webroot\makrotik.db</dbFilePath>-->
+<!--        <dbFilePath>D:\WORK\PROJECT\makrotik\SPRINGBOOT-GRADLE-SPREADSHEET\makrotik-rumah.db</dbFilePath>-->
+        <dbFilePath>/home/acang/Work/Project/SPRINGBOOT-GRADLE-SPREADSHEET/webroot/makrotik-rumah.db</dbFilePath>
         <user>acang</user>
         <password>P@ssw0rd</password>
     </databaseSqlite>
@@ -68,8 +68,8 @@
         <scaleImgSize>200</scaleImgSize>
         <!-- true/false -->
         <logStream>true</logStream>
-<!--        <masterFolder>Z:\WORK\NgadiNgadi\CECENET\BACKEND\MAKROTIK\</masterFolder>-->
-        <masterFolder>/home/acang/Work/Project/makrotik/webroot/</masterFolder>
+<!--        <masterFolder>Z:\WORK\NgadiNgadi\CECENET\BACKEND\SPRINGBOOT-GRADLE-SPREADSHEET\</masterFolder>-->
+        <masterFolder>/home/acang/Work/Project/SPRINGBOOT-GRADLE-SPREADSHEET/webroot/</masterFolder>
         <sessionUrl>http://ec2-18-139-197-17.ap-southeast-1.compute.amazonaws.com:40123/Session</sessionUrl>
     </misc>
     <ftpServerInventory>
