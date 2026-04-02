@@ -122,65 +122,67 @@ public class ControllerSpreadSheet {
             this.response = new ResponseEntity<>(responseBody, headers, HttpStatus.BAD_REQUEST);
         }
 
-        // 3. MODIFIKASI DATA (Update Cells)
-        for (int r = 0; r < dataSource.size(); r++) {
-            List<Object> columns = dataSource.get(r);
-            Row row = activeSheet.getRow(r);
-            if (row == null) row = activeSheet.createRow(r);
+        synchronized (workbook) {
+            // 3. MODIFIKASI DATA (Update Cells)
+            for (int r = 0; r < dataSource.size(); r++) {
+                List<Object> columns = dataSource.get(r);
+                Row row = activeSheet.getRow(r);
+                if (row == null) row = activeSheet.createRow(r);
 
-            for (int c = 0; c < columns.size(); c++) {
-                Cell cell = row.getCell(c);
-                if (cell == null) cell = row.createCell(c);
+                for (int c = 0; c < columns.size(); c++) {
+                    Cell cell = row.getCell(c);
+                    if (cell == null) cell = row.createCell(c);
 
-                Object value = columns.get(c);
-                updateCellValue(cell, value);
+                    Object value = columns.get(c);
+                    updateCellValue(cell, value);
+                }
             }
-        }
 
-        // 4. RE-EVALUATE FORMULA
-        FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
-        evaluator.clearAllCachedResultValues(); // Di POI, rumus gak otomatis update pas cell berubah, harus dipicu manual
-        evaluator.setIgnoreMissingWorkbooks(true); // JANGAN BERHENTI PAS KETEMU ERROR (Mirip PHP)
-        workbook.setForceFormulaRecalculation(true);  // Paksa Workbook buat ngitung ulang pas file dibuka nanti
+            // 4. RE-EVALUATE FORMULA
+            FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
+            evaluator.clearAllCachedResultValues(); // Di POI, rumus gak otomatis update pas cell berubah, harus dipicu manual
+            evaluator.setIgnoreMissingWorkbooks(true); // JANGAN BERHENTI PAS KETEMU ERROR (Mirip PHP)
+            workbook.setForceFormulaRecalculation(true);  // Paksa Workbook buat ngitung ulang pas file dibuka nanti
 
-        // 5. RETURN HASIL (getCalculatedValue)
-        Map<String, Object> calculatedValue = new HashMap<>();
-        for (Row row : activeSheet) {
-            for (Cell cell : row) {
-                String coordinate = cell.getAddress().formatAsString();
-                Object value = "";
+            // 5. RETURN HASIL (getCalculatedValue)
+            Map<String, Object> calculatedValue = new HashMap<>();
+            for (Row row : activeSheet) {
+                for (Cell cell : row) {
+                    String coordinate = cell.getAddress().formatAsString();
+                    Object value = "";
 
-                try {
-                    // Gunakan ini untuk mengevaluasi tanpa return CellValue langsung
-                    if (cell.getCellType() == CellType.FORMULA) {
-                        // Biarkan POI ngitung di dalam cell itu sendiri
-                        evaluator.evaluateFormulaCell(cell);
+                    try {
+                        // Gunakan ini untuk mengevaluasi tanpa return CellValue langsung
+                        if (cell.getCellType() == CellType.FORMULA) {
+                            // Biarkan POI ngitung di dalam cell itu sendiri
+                            evaluator.evaluateFormulaCell(cell);
+                        }
+
+                        // Panggil helper yang tadi udah kita bikin kebal error
+                        value = getCalculatedValue(cell, evaluator);
+                    } catch (Exception e) {
+                        // Kalau rumusnya beneran "pecah" di dalem, tangkap di sini
+                        value = "#VALUE!";
                     }
 
-                    // Panggil helper yang tadi udah kita bikin kebal error
-                    value = getCalculatedValue(cell, evaluator);
-                } catch (Exception e) {
-                    // Kalau rumusnya beneran "pecah" di dalem, tangkap di sini
-                    value = "#VALUE!";
+                    calculatedValue.put(coordinate, value);
+                    jObjResponse.put(coordinate, value);
                 }
-
-                calculatedValue.put(coordinate, value);
-                jObjResponse.put(coordinate, value);
             }
+            final JSONObject finalJObjResponse = jObjResponse;
+            StreamingResponseBody responseBody = outputStream -> {
+                String data = finalJObjResponse.toString();
+                outputStream.write(data.getBytes(StandardCharsets.UTF_8));
+                outputStream.flush();
+            };
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Content-Type", String.valueOf(MediaType.APPLICATION_JSON));
+            this.response = ResponseEntity.ok()
+                    .headers(headers)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(responseBody);
+            return this.response;
         }
-        final JSONObject finalJObjResponse = jObjResponse;
-        StreamingResponseBody responseBody = outputStream -> {
-            String data = finalJObjResponse.toString();
-            outputStream.write(data.getBytes(StandardCharsets.UTF_8));
-            outputStream.flush();
-        };
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Type", String.valueOf(MediaType.APPLICATION_JSON));
-        this.response = ResponseEntity.ok()
-                .headers(headers)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(responseBody);
-        return this.response;
     }
 
     // Helper buat nulis berbagai tipe data
