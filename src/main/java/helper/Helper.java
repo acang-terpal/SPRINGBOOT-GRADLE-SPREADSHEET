@@ -597,10 +597,10 @@ public class Helper {
 //                System.out.println(this.objParams.toString());
                 }
             } catch (Exception e) {
-                System.err.println("Gagal baca JSON Body: " + e.getMessage());
+//                System.err.println("Gagal baca JSON Body: " + e.getMessage());
             }
         }
-
+//        System.out.println(objParams.toString());
         String[] uriSplit = fullUri.split("/");
 //        for (String uri : uriSplit) {
 //            System.out.println("uriSplit : " + uri);

@@ -5,6 +5,7 @@ import configuration.ControllerLog;
 import configuration.DependencyConfig;
 import configuration.FreeMarkerConfig;
 import entity.EntityConfig;
+import freemarker.template.Template;
 import helper.CookieHelperDb;
 import helper.Helper;
 import helper.Utilities;
@@ -12,6 +13,7 @@ import implement.ImpleSpreadSheetLogin;
 import interfc.InterfcSpreadSheetLogin;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import main.Main;
 import net.sf.ehcache.Cache;
 import org.apache.poi.ss.usermodel.*;
 import org.json.JSONObject;
@@ -21,12 +23,19 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-import service.SpreadSheetAccountService;
+import org.springframework.web.util.WebUtils;
+import service.sqlite.SpreadSheetAccountService;
 
 import java.io.File;
+import java.io.OutputStreamWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,9 +59,8 @@ public class ControllerSpreadSheet {
     private final Cache cacheMaster;
     private ResponseEntity<StreamingResponseBody> response;
     private String fullUri, fullUrl, query, webroot, controller, methode, view, webRootUrl, baseUrl, hostPort;
-    private HashMap objParams;
+    private HashMap objParams, objRequestProperties, objCookie;
     private Cookie cookie;
-    private HashMap objRequestProperties;
 
     @Autowired
     public ControllerSpreadSheet(DependencyConfig dependencyConfig, FreeMarkerConfig freeMarkerCfg, Utilities utilities, Helper hlp, ImpleSpreadSheetLogin impleSpreadSheetLogin, CookieHelperDb cookieHelperDb, ControllerEncDec controllerEncDec, SpreadSheetAccountService SpreadSheetAccountService) {
@@ -83,6 +91,17 @@ public class ControllerSpreadSheet {
         this.webRootUrl = objRequestProperties.get("webRootUrl").toString();
         this.baseUrl = objRequestProperties.get("baseUrl").toString();
         this.hostPort = objRequestProperties.get("hostPort").toString();
+        this.cookie = WebUtils.getCookie(request, "SpreadSheetCookie");
+        //System.out.println(this.cookie.getValue());
+        if (cookie != null) {
+            if (this.cookieHelper.checkExistCookie(cookie.getValue())) {
+                this.objCookie = this.cookieHelper.getDataCookie(this.cookie.getValue());
+            } else {
+                this.cookie = new Cookie("SpreadSheetCookie", "null");
+            }
+        } else {
+            this.cookie = new Cookie("SpreadSheetCookie", "null");
+        }
     }
 
     public ResponseEntity<StreamingResponseBody> formulaExecutor(HttpServletRequest request) throws Exception {
@@ -122,7 +141,7 @@ public class ControllerSpreadSheet {
             this.response = new ResponseEntity<>(responseBody, headers, HttpStatus.BAD_REQUEST);
         }
 
-        synchronized (workbook) {
+//        synchronized (workbook) {
             // 3. MODIFIKASI DATA (Update Cells)
             for (int r = 0; r < dataSource.size(); r++) {
                 List<Object> columns = dataSource.get(r);
@@ -182,7 +201,7 @@ public class ControllerSpreadSheet {
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(responseBody);
             return this.response;
-        }
+//        }
     }
 
     // Helper buat nulis berbagai tipe data
@@ -268,6 +287,183 @@ public class ControllerSpreadSheet {
             // Kalau rumusnya error parah di dalem
             return "#ERROR!";
         }
+    }
+
+    public ResponseEntity<StreamingResponseBody> getPage(HttpServletRequest request) {
+        this.handleRequestProperties(request);
+        //check cookie
+        //System.out.println(this.cookie.getValue());
+        if (this.cookieHelper.checkExistCookie(this.cookie.getValue())) {
+            try {
+                HashMap objAccount = this.hlp.hashStringToHashMap(this.objCookie.get("objAccount").toString());
+                //renew cookie
+                this.cookie = this.cookieHelper.renewCookie(this.cookie.getValue());
+                HttpHeaders headers = new HttpHeaders();
+                headers.add("Set-Cookie", " SpreadSheetCookie=" + this.cookie.getValue() + "; Max-Age=" + this.cookie.getMaxAge() + "; Path=/; " + this.cookie.getPath() + "; " + this.cookie.getSecure());
+                StringWriter headerSW = new StringWriter();
+                StringWriter sideBarSW = new StringWriter();
+                StringWriter sideBarSecondarySW = new StringWriter();
+                StringWriter contentSW = new StringWriter();
+                return ResponseEntity.ok()
+                        .headers(headers)
+                        .contentType(MediaType.TEXT_HTML)
+                        .body(outputStream -> {
+                            // Writer langsung bungkus outputStream
+                            try (Writer writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
+                                Map<String, Object> map = new HashMap<String, Object>();
+                                CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
+                                if (csrfToken != null) {
+                                    map.put("_csrf", csrfToken);
+                                } else {
+                                    map.put("_csrf", request.getAttribute("_csrf"));
+                                }
+                                map.put("webRootUrl", this.webRootUrl);
+                                map.put("baseUrl", this.baseUrl);
+                                map.put("activeSidebarMain", "spreedsheet");
+
+                                // ---------------------Render header langsung ke writer----------------------
+                                Template header = this.freeMarkerCfg.getObjectMamenComponent().getTemplate(File.separator + "header" + ".html");
+                                //sidebar
+                                header.process(map, headerSW);
+                                map.put("headerObj", headerSW.toString());
+                                // ---------------------Render sidebar langsung ke writer----------------------
+                                Template sideBar = this.freeMarkerCfg.getObjectMamenComponent().getTemplate(File.separator + "sidebar" + ".html");
+                                //sidebar
+                                sideBar.process(map, sideBarSW);
+                                map.put("sideBarObj", sideBarSW.toString());
+                                // ---------------------Render Sidebar Secondary langsung ke writer----------------------
+                                Template sideBarSecondary = this.freeMarkerCfg.getObjectMamenComponent().getTemplate(File.separator + "sidebar_secondary" + ".html");
+                                //sidebar
+                                sideBarSecondary.process(map, sideBarSecondarySW);
+                                map.put("sideBarSecondaryObj", sideBarSecondarySW.toString());
+
+                                // Render Content langsung ke writer
+                                Template pageContent = this.freeMarkerCfg.getObjectMamenComponent().getTemplate(File.separator + view + "_page_content" + ".html");
+                                pageContent.process(map, contentSW);
+                                map.put("pageContentObj", contentSW.toString());
+
+                                // Render Template Utama LANGSUNG ke Browser
+                                Template template = this.freeMarkerCfg.getObjectMamen().getTemplate(view + ".html");
+                                template.process(map, writer); // <--- KUNCI IRIT RAM: Tulis langsung ke selang (writer)
+                                writer.flush();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            } finally {
+                                try {
+                                    headerSW.flush();
+                                    headerSW.close();
+                                    sideBarSW.flush();
+                                    sideBarSW.close();
+                                    sideBarSecondarySW.flush();
+                                    sideBarSecondarySW.close();
+                                    contentSW.flush();
+                                    contentSW.close();
+                                } catch (Exception ex) {
+                                    ex.printStackTrace();
+                                }
+                            }
+                        });
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            } finally {
+                try {
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+
+
+        } else {
+            response = this.hlp.redirectToLogin(request, objRequestProperties);
+        }
+        return this.response;
+    }
+
+    public ResponseEntity<StreamingResponseBody> getPageFormInput(HttpServletRequest request) {
+        this.handleRequestProperties(request);
+        //check cookie
+        //System.out.println(this.cookie.getValue());
+        if (this.cookieHelper.checkExistCookie(this.cookie.getValue())) {
+            try {
+                HashMap objAccount = this.hlp.hashStringToHashMap(this.objCookie.get("objAccount").toString());
+                //renew cookie
+                this.cookie = this.cookieHelper.renewCookie(this.cookie.getValue());
+                HttpHeaders headers = new HttpHeaders();
+                headers.add("Set-Cookie", " SpreadSheetCookie=" + this.cookie.getValue() + "; Max-Age=" + this.cookie.getMaxAge() + "; Path=/; " + this.cookie.getPath() + "; " + this.cookie.getSecure());
+
+                CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
+                String jsonData = Files.readString(Paths.get(Main.conf.getMasterFolder() + File.separator + "webroot" + File.separator + "input.json"));
+                String jsonSatuan = Files.readString(Paths.get(Main.conf.getMasterFolder() + File.separator + "webroot" + File.separator + "satuan.json"));
+                String jsonLevel = Files.readString(Paths.get(Main.conf.getMasterFolder() + File.separator + "webroot" + File.separator + "level.json"));
+                Template header = this.freeMarkerCfg.getObjectMamenComponent().getTemplate(File.separator + "header" + ".html");
+                Template sideBar = this.freeMarkerCfg.getObjectMamenComponent().getTemplate(File.separator + "sidebar" + ".html");
+                Template sideBarSecondary = this.freeMarkerCfg.getObjectMamenComponent().getTemplate(File.separator + "sidebar_secondary" + ".html");
+                Template pageContent = this.freeMarkerCfg.getObjectMamenComponent().getTemplate(File.separator + view + "_page_content" + ".html");
+                Template template = this.freeMarkerCfg.getObjectMamen().getTemplate(view + ".html");
+                StreamingResponseBody responseBody = outputStream -> {
+                    try (Writer writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
+                        StringWriter headerSW = new StringWriter();
+                        StringWriter sideBarSW = new StringWriter();
+                        StringWriter sideBarSecondarySW = new StringWriter();
+                        StringWriter contentSW = new StringWriter();
+
+                        Map<String, Object> map = new HashMap<String, Object>();
+                        map.put("_csrf", csrfToken);
+                        map.put("webRootUrl", this.webRootUrl);
+                        map.put("baseUrl", this.baseUrl);
+                        map.put("activeSidebarMain", "form_input");
+                        map.put("jsonData", jsonData);
+                        map.put("jsonSatuan", jsonSatuan);
+                        map.put("jsonLevel", jsonLevel);
+
+                        // ---------------------Render header----------------------
+                        header.process(map, headerSW);
+                        map.put("headerObj", headerSW.toString());
+                        // ---------------------Render sidebar----------------------
+                        //sidebar
+                        sideBar.process(map, sideBarSW);
+                        map.put("sideBarObj", sideBarSW.toString());
+                        // ---------------------Render Sidebar Secondary----------------------
+                        //sidebar
+                        sideBarSecondary.process(map, sideBarSecondarySW);
+                        map.put("sideBarSecondaryObj", sideBarSecondarySW.toString());
+                        // ---------------------Render page content----------------------
+                        pageContent.process(map, contentSW);
+                        map.put("pageContentObj", contentSW.toString());
+
+                        // ---------------------Render all to writer---------------------
+                        template.process(map, writer); // <--- KUNCI IRIT RAM: Tulis langsung ke selang (writer)
+                        writer.flush();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        try {
+
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                };
+                return ResponseEntity.ok()
+                        .headers(headers)
+                        .contentType(MediaType.TEXT_HTML)
+                        .body(responseBody);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            } finally {
+                try {
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+
+
+        } else {
+            response = this.hlp.redirectToLogin(request, objRequestProperties);
+        }
+        return this.response;
     }
 }
 

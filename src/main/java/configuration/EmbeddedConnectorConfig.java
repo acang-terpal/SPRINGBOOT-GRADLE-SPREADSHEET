@@ -36,6 +36,7 @@ public class EmbeddedConnectorConfig {
                 VirtualThreadPool vThreadPool = server.getBean(VirtualThreadPool.class);
                 vThreadPool.setMaxConcurrentTasks(2000000);
                 server.setAttribute("threadpool", vThreadPool);
+                server.setStopTimeout(30000);
 
                 //--------------------------------------set handler gzip-----------------------------------------
                 ContextHandlerCollection handlerCollection = this.getHandlerCollection(server);
@@ -44,11 +45,13 @@ public class EmbeddedConnectorConfig {
                 //--------------------------------------custom http-----------------------------------------
                 ServerConnector connectorHttpByConfig = new ServerConnector(server);
                 connectorHttpByConfig.setPort(Integer.parseInt(Main.conf.getHttpPort()));
+                connectorHttpByConfig.setIdleTimeout(120000);
                 connectorHttpByConfig.setName("jetty http " + Main.conf.getHttpPort());
                 server.addConnector(connectorHttpByConfig);
 
                 ServerConnector connectorHttpHardCode = new ServerConnector(server);
                 connectorHttpHardCode.setPort(8079);
+                connectorHttpHardCode.setIdleTimeout(120000);
                 connectorHttpHardCode.setName("jetty http 8079");
                 server.addConnector(connectorHttpHardCode);
 
@@ -67,11 +70,13 @@ public class EmbeddedConnectorConfig {
                 sslContextFactory.setIncludeProtocols("TLSv1.2", "TLSv1.3");
 
                 HttpConfiguration httpConfiguration = new HttpConfiguration();
+                httpConfiguration.setSendServerVersion(false);
                 ServerConnector connectorHttpsHarcode = new ServerConnector(
                         server,
                         new SslConnectionFactory(sslContextFactory, HttpVersion.HTTP_1_1.asString()),
                         new HttpConnectionFactory(httpConfiguration));
                 connectorHttpsHarcode.setPort(8080);
+                connectorHttpsHarcode.setIdleTimeout(120000);
                 connectorHttpsHarcode.setName("jetty https 8080");
                 server.addConnector(connectorHttpsHarcode);
 

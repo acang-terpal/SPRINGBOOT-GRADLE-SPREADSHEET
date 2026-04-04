@@ -19,10 +19,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import org.springframework.web.util.WebUtils;
-import service.SpreadSheetAccountService;
+import service.postgres.SpreadSheetAccountService;
 
 import java.io.StringWriter;
 import java.net.URI;
@@ -51,6 +53,7 @@ public class ControllerSpreadSheetLogin {
     private final FreeMarkerConfig freeMarkerCfg;
     private final Cache cacheCookies;
     private final Cache cacheMaster;
+    private final PasswordEncoder passwordEncoder;
     private ResponseEntity<StreamingResponseBody> response;
     private String fullUri, fullUrl, query, webroot, controller, methode, view, webRootUrl, baseUrl, hostPort;
     private HashMap objParams;
@@ -58,7 +61,7 @@ public class ControllerSpreadSheetLogin {
     private HashMap objRequestProperties;
 
     @Autowired
-    public ControllerSpreadSheetLogin(DependencyConfig dependencyConfig, FreeMarkerConfig freeMarkerCfg, Utilities utilities, Helper hlp, ImpleSpreadSheetLogin impleSpreadSheetLogin, CookieHelperDb cookieHelperDb, ControllerEncDec controllerEncDec, SpreadSheetAccountService SpreadSheetAccountService) {
+    public ControllerSpreadSheetLogin(DependencyConfig dependencyConfig, FreeMarkerConfig freeMarkerCfg, Utilities utilities, Helper hlp, ImpleSpreadSheetLogin impleSpreadSheetLogin, CookieHelperDb cookieHelperDb, ControllerEncDec controllerEncDec, SpreadSheetAccountService SpreadSheetAccountService, PasswordEncoder passwordEncoder) {
         this.controllerLog = dependencyConfig.getControllerLog();
         this.entityConfig = dependencyConfig.getEntityConfig();
         this.freeMarkerCfg = freeMarkerCfg;
@@ -70,6 +73,7 @@ public class ControllerSpreadSheetLogin {
         this.encDec = controllerEncDec;
         this.service = impleSpreadSheetLogin;
         this.SpreadSheetAccountService = SpreadSheetAccountService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public void handleRequestProperties(HttpServletRequest request) {
@@ -94,6 +98,12 @@ public class ControllerSpreadSheetLogin {
         StringWriter templateStrObj = new StringWriter();
         try {
             Map<String, Object> map = new HashMap<String, Object>();
+            CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
+            if (csrfToken != null) {
+                map.put("_csrf", csrfToken);
+            } else {
+                map.put("_csrf", request.getAttribute("_csrf"));
+            }
             //put together on view template
             map.put("webRootUrl", this.webRootUrl);
             map.put("baseUrl", this.baseUrl);
@@ -136,21 +146,36 @@ public class ControllerSpreadSheetLogin {
             //System.out.println("jObjBoard : " + jObjBoard.toString());
             if (!listAccount.isEmpty()) {
                 HashMap objAccount = (HashMap) listAccount.get(0);
-                jObjResponse = ConstantMessage.Pesan.getSuccess.pesan();
-                HttpHeaders headers = new HttpHeaders();
-                Cookie cookie = this.cookieHelper.setCookie("");
-                this.cookieHelper.addDataCookie(cookie.getValue(), "objAccount", objAccount.toString());
+//                System.out.println(objAccount.toString());
+                if (!passwordEncoder.matches(objParams.get("login_password").toString(), objAccount.get("password").toString())) {
+                    jObjResponse.put("rc", "06");
+                    jObjResponse.put("message", "Failed, account not yet active or password not match!");
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.add("Content-Type", String.valueOf(MediaType.TEXT_HTML));
+                    JSONObject finalJObjResponse1 = jObjResponse;
+                    StreamingResponseBody responseBody = outputStream -> {
+                        String data = finalJObjResponse1.toString();
+                        outputStream.write(data.getBytes(StandardCharsets.UTF_8));
+                        outputStream.flush();
+                    };
+                    this.response = new ResponseEntity<>(responseBody, headers, HttpStatus.OK);
+                } else {
+                    jObjResponse = ConstantMessage.Pesan.getSuccess.pesan();
+                    HttpHeaders headers = new HttpHeaders();
+                    Cookie cookie = this.cookieHelper.setCookie("");
+                    this.cookieHelper.addDataCookie(cookie.getValue(), "objAccount", objAccount.toString());
 
-                headers.add("Set-Cookie", "SpreadSheetCookie=" + cookie.getValue() + "; Max-Age=" + cookie.getMaxAge() + "; Path=/; " + cookie.getPath() + "; " + cookie.getSecure());
-                headers.add("Content-Type", String.valueOf(MediaType.TEXT_HTML));
+                    headers.add("Set-Cookie", "SpreadSheetCookie=" + cookie.getValue() + "; Max-Age=" + cookie.getMaxAge() + "; Path=/; " + cookie.getPath() + "; " + cookie.getSecure());
+                    headers.add("Content-Type", String.valueOf(MediaType.TEXT_HTML));
 //                response = ResponseEntity.ok().headers(headers).contentType(MediaType.TEXT_HTML).body(jObjResponse.toString().getBytes(StandardCharsets.UTF_8));
-                JSONObject finalJObjResponse = jObjResponse;
-                StreamingResponseBody responseBody = outputStream -> {
-                    String data = finalJObjResponse.toString();
-                    outputStream.write(data.getBytes(StandardCharsets.UTF_8));
-                    outputStream.flush();
-                };
-                this.response = new ResponseEntity<>(responseBody, headers, HttpStatus.OK);
+                    JSONObject finalJObjResponse = jObjResponse;
+                    StreamingResponseBody responseBody = outputStream -> {
+                        String data = finalJObjResponse.toString();
+                        outputStream.write(data.getBytes(StandardCharsets.UTF_8));
+                        outputStream.flush();
+                    };
+                    this.response = new ResponseEntity<>(responseBody, headers, HttpStatus.OK);
+                }
             } else {
                 jObjResponse.put("rc", "06");
                 jObjResponse.put("message", "Failed, account not yet active or password not match!");

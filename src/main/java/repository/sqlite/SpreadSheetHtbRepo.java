@@ -1,6 +1,6 @@
-package repository;
+package repository.sqlite;
 
-import entity.EntityHtb;
+import entity.sqlite.EntityHtb;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

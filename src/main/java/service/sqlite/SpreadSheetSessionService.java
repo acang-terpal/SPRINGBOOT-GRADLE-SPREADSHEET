@@ -1,13 +1,13 @@
-package service;
+package service.sqlite;
 
-import entity.EntitySessions;
+import entity.sqlite.EntitySessions;
 import helper.Utilities;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import repository.SpreadSheetSessionRepo;
+import repository.sqlite.SpreadSheetSessionRepo;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;

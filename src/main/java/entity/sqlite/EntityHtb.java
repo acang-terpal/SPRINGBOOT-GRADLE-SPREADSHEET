@@ -1,4 +1,4 @@
-package entity;
+package entity.sqlite;
 
 import jakarta.persistence.*;
 import lombok.Getter;

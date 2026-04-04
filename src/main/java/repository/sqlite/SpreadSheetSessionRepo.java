@@ -1,6 +1,6 @@
-package repository;
+package repository.sqlite;
 
-import entity.EntitySessions;
+import entity.sqlite.EntitySessions;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

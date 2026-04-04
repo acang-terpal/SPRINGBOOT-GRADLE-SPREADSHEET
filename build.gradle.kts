@@ -30,6 +30,7 @@ dependencies {
         exclude(group = "org.springframework.boot", module = "spring-boot-starter-freemarker")
     }
     implementation("org.springframework.boot:spring-boot-starter-jetty")
+    implementation("org.springframework.boot:spring-boot-starter-security")
 
     // --- JETTY CORE & COMPRESSION ---
     implementation("org.eclipse.jetty.compression:jetty-compression-server")
@@ -43,8 +44,8 @@ dependencies {
 
     // --- DATABASES ---
     implementation("org.xerial:sqlite-jdbc:3.51.2.0")
-    implementation("org.postgresql:postgresql:9.2-1003-jdbc4")
-    implementation("mysql:mysql-connector-java:5.1.23")
+    implementation("org.postgresql:postgresql:42.7.2")
+    implementation("com.mysql:mysql-connector-j:8.3.0")
     implementation("org.hibernate.orm:hibernate-community-dialects:6.6.5.Final")
 
     // --- LOMBOK ---

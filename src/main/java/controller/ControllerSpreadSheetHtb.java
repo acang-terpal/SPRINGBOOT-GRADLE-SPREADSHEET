@@ -5,7 +5,7 @@ import configuration.ControllerLog;
 import configuration.DependencyConfig;
 import configuration.FreeMarkerConfig;
 import entity.EntityConfig;
-import entity.EntityHtb;
+import entity.sqlite.EntityHtb;
 import freemarker.template.Template;
 import helper.ConstantMessage;
 import helper.CookieHelperDb;
@@ -23,10 +23,11 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import org.springframework.web.util.WebUtils;
-import service.SpreadSheetHtbService;
+import service.sqlite.SpreadSheetHtbService;
 
 import java.io.File;
 import java.io.OutputStreamWriter;
@@ -111,7 +112,9 @@ public class ControllerSpreadSheetHtb {
                 this.cookie = this.cookieHelper.renewCookie(this.cookie.getValue());
                 HttpHeaders headers = new HttpHeaders();
                 headers.add("Set-Cookie", " SpreadSheetCookie=" + this.cookie.getValue() + "; Max-Age=" + this.cookie.getMaxAge() + "; Path=/; " + this.cookie.getPath() + "; " + this.cookie.getSecure());
+                StringWriter headerSW = new StringWriter();
                 StringWriter sideBarSW = new StringWriter();
+                StringWriter sideBarSecondarySW = new StringWriter();
                 StringWriter contentSW = new StringWriter();
                 return ResponseEntity.ok()
                         .headers(headers)
@@ -119,6 +122,12 @@ public class ControllerSpreadSheetHtb {
                         .body(outputStream -> {
                             try (Writer writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
                                 Map<String, Object> map = new HashMap<String, Object>();
+                                CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
+                                if (csrfToken != null) {
+                                    map.put("_csrf", csrfToken);
+                                } else {
+                                    map.put("_csrf", request.getAttribute("_csrf"));
+                                }
                                 map.put("webRootUrl", this.webRootUrl);
                                 map.put("baseUrl", this.baseUrl);
                                 map.put("dashBoardActive", "current_section");
@@ -126,11 +135,21 @@ public class ControllerSpreadSheetHtb {
                                 map.put("boardAsMemberActive", "");
                                 map.put("memberActive", "");
 
-                                // ---------------------Render Sidebar langsung ke writer----------------------
+                                // ---------------------Render header langsung ke writer----------------------
+                                Template header = this.freeMarkerCfg.getObjectMamen().getTemplate("component" + File.separator + "header" + ".html");
+                                //sidebar
+                                header.process(map, headerSW);
+                                map.put("headerObj", headerSW.toString());
+                                // ---------------------Render sidebar langsung ke writer----------------------
                                 Template sideBar = this.freeMarkerCfg.getObjectMamen().getTemplate("component" + File.separator + "sidebar" + ".html");
                                 //sidebar
                                 sideBar.process(map, sideBarSW);
                                 map.put("sideBarObj", sideBarSW.toString());
+                                // ---------------------Render Sidebar Secondary langsung ke writer----------------------
+                                Template sideBarSecondary = this.freeMarkerCfg.getObjectMamen().getTemplate("component" + File.separator + "sidebar_secondary" + ".html");
+                                //sidebar
+                                sideBarSecondary.process(map, sideBarSecondarySW);
+                                map.put("sideBarSecondaryObj", sideBarSecondarySW.toString());
 
                                 //--------------------------------content----------------------------------
                                 List<EntityHtb> htbTree = this.serviceJpa.findHtbTree(); // testing get parent and all children
@@ -248,8 +267,12 @@ public class ControllerSpreadSheetHtb {
                                 e.printStackTrace();
                             } finally {
                                 try {
+                                    headerSW.flush();
+                                    headerSW.close();
                                     sideBarSW.flush();
                                     sideBarSW.close();
+                                    sideBarSecondarySW.flush();
+                                    sideBarSecondarySW.close();
                                     contentSW.flush();
                                     contentSW.close();
                                 } catch (Exception ex) {

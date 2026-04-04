@@ -10,7 +10,6 @@ import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -24,7 +23,6 @@ import java.util.HashMap;
  */
 @SpringBootApplication
 @ComponentScan(basePackages = {"rest_resource", "configuration", "router", "controller", "implement", "helper", "service"})
-@EnableJpaRepositories(basePackages = "repository")
 @EntityScan("entity")
 public class Main {
     public static EntityConfig conf;

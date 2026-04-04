@@ -69,7 +69,7 @@
         <!-- true/false -->
         <logStream>true</logStream>
 <!--        <masterFolder>Z:\WORK\NgadiNgadi\CECENET\BACKEND\SPRINGBOOT-GRADLE-SPREADSHEET\</masterFolder>-->
-        <masterFolder>/home/acang/Work/Project/SPRINGBOOT-GRADLE-SPREADSHEET/webroot/</masterFolder>
+        <masterFolder>/home/acang/Work/Project/SPRINGBOOT-GRADLE-SPREADSHEET</masterFolder>
         <sessionUrl>http://ec2-18-139-197-17.ap-southeast-1.compute.amazonaws.com:40123/Session</sessionUrl>
     </misc>
     <ftpServerInventory>

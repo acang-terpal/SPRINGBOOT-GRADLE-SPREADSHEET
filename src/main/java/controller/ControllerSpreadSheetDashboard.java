@@ -19,6 +19,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import org.springframework.web.util.WebUtils;
@@ -104,7 +105,10 @@ public class ControllerSpreadSheetDashboard {
                 this.cookie = this.cookieHelper.renewCookie(this.cookie.getValue());
                 HttpHeaders headers = new HttpHeaders();
                 headers.add("Set-Cookie", " SpreadSheetCookie=" + this.cookie.getValue() + "; Max-Age=" + this.cookie.getMaxAge() + "; Path=/; " + this.cookie.getPath() + "; " + this.cookie.getSecure());
-
+                StringWriter headerSW = new StringWriter();
+                StringWriter sideBarSW = new StringWriter();
+                StringWriter sideBarSecondarySW = new StringWriter();
+                StringWriter contentSW = new StringWriter();
                 return ResponseEntity.ok()
                         .headers(headers)
                         .contentType(MediaType.TEXT_HTML)
@@ -112,23 +116,34 @@ public class ControllerSpreadSheetDashboard {
                             // Writer langsung bungkus outputStream
                             try (Writer writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
                                 Map<String, Object> map = new HashMap<String, Object>();
+                                CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
+                                if (csrfToken != null) {
+                                    map.put("_csrf", csrfToken);
+                                } else {
+                                    map.put("_csrf", request.getAttribute("_csrf"));
+                                }
                                 map.put("webRootUrl", this.webRootUrl);
                                 map.put("baseUrl", this.baseUrl);
+                                map.put("activeSidebarMain", "dashboard");
 
-                                // Render Sidebar langsung ke writer
-                                Template sideBar = this.freeMarkerCfg.getObjectMamen().getTemplate("component" + File.separator + "sidebar" + ".html");
-                                StringWriter sideBarSW = new StringWriter();
+                                // ---------------------Render header langsung ke writer----------------------
+                                Template header = this.freeMarkerCfg.getObjectMamen().getTemplate("component" + File.separator + "header" + ".html");
                                 //sidebar
-                                map.put("dashBoardActive", "current_section");
-                                map.put("boardAsOwnActive", ""); //act_item
-                                map.put("boardAsMemberActive", "");
-                                map.put("memberActive", "");
+                                header.process(map, headerSW);
+                                map.put("headerObj", headerSW.toString());
+                                // ---------------------Render sidebar langsung ke writer----------------------
+                                Template sideBar = this.freeMarkerCfg.getObjectMamen().getTemplate("component" + File.separator + "sidebar" + ".html");
+                                //sidebar
                                 sideBar.process(map, sideBarSW);
                                 map.put("sideBarObj", sideBarSW.toString());
+                                // ---------------------Render Sidebar Secondary langsung ke writer----------------------
+                                Template sideBarSecondary = this.freeMarkerCfg.getObjectMamen().getTemplate("component" + File.separator + "sidebar_secondary" + ".html");
+                                //sidebar
+                                sideBarSecondary.process(map, sideBarSecondarySW);
+                                map.put("sideBarSecondaryObj", sideBarSecondarySW.toString());
 
                                 // Render Content langsung ke writer
                                 Template pageContent =this.freeMarkerCfg.getObjectMamen().getTemplate("component" + File.separator + view + "_page_content" + ".html");
-                                StringWriter contentSW = new StringWriter();
                                 pageContent.process(map, contentSW);
                                 map.put("pageContentObj", contentSW.toString());
 
@@ -138,6 +153,19 @@ public class ControllerSpreadSheetDashboard {
                                 writer.flush();
                             } catch (Exception e) {
                                 e.printStackTrace();
+                            } finally {
+                                try {
+                                    headerSW.flush();
+                                    headerSW.close();
+                                    sideBarSW.flush();
+                                    sideBarSW.close();
+                                    sideBarSecondarySW.flush();
+                                    sideBarSecondarySW.close();
+                                    contentSW.flush();
+                                    contentSW.close();
+                                } catch (Exception ex) {
+                                    ex.printStackTrace();
+                                }
                             }
                         });
             } catch (Exception ex) {

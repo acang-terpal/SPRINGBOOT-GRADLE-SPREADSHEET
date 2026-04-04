@@ -9,7 +9,7 @@ import com.google.common.base.Throwables;
 import configuration.ControllerLog;
 import configuration.DependencyConfig;
 import entity.EntityConfig;
-import entity.EntityHtb;
+import entity.sqlite.EntityHtb;
 import helper.rest_client.http.HttpResponse;
 import helper.rest_client.http.RestClient;
 import jakarta.servlet.http.Cookie;

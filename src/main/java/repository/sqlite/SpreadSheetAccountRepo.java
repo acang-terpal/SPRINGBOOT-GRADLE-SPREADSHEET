@@ -1,13 +1,13 @@
-package repository;
+package repository.sqlite;
 
-import entity.EntityAccount;
+import entity.sqlite.EntityAccount;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Repository
+@Repository("sqliteAccountRepo")
 public interface SpreadSheetAccountRepo extends JpaRepository<EntityAccount, Long> {
 
     @Query(value = "SELECT   " +
