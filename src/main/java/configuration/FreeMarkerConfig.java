@@ -29,7 +29,7 @@ public class FreeMarkerConfig {
             freeMarkerCfgMamen.setFallbackOnNullLoopVariable(false);
 //            freeMarkerCfgMamen.setCacheStorage(new freemarker.cache.NullCacheStorage());
             freeMarkerCfgMamen.setCacheStorage(new freemarker.cache.MruCacheStorage(20, 250));
-            freeMarkerCfgMamen.setTemplateUpdateDelayMilliseconds(5000); // Cek update template setiap 5 detik (0 kalau mau selamanya di cache)
+            freeMarkerCfgMamen.setTemplateUpdateDelayMilliseconds(Integer.MAX_VALUE); // Cek update template setiap 5 detik (0 kalau mau selamanya di cache)
 
             //component
             freeMarkerCfgMamenComponent.setDirectoryForTemplateLoading(new File(Main.conf.getMasterFolder() + File.separator + "webroot" + File.separator + "SpreadSheet" + File.separator + "component"));
@@ -40,7 +40,7 @@ public class FreeMarkerConfig {
             freeMarkerCfgMamenComponent.setFallbackOnNullLoopVariable(false);
 //            freeMarkerCfgMamen.setCacheStorage(new freemarker.cache.NullCacheStorage());
             freeMarkerCfgMamenComponent.setCacheStorage(new freemarker.cache.MruCacheStorage(20, 250));
-            freeMarkerCfgMamenComponent.setTemplateUpdateDelayMilliseconds(5000);
+            freeMarkerCfgMamenComponent.setTemplateUpdateDelayMilliseconds(Integer.MAX_VALUE);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

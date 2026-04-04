@@ -10,7 +10,14 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import service.postgres.SpreadSheetAccountService;
+
+import java.util.List;
 
 @Configuration
 @Scope("prototype")
@@ -37,8 +44,11 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // 1. CSRF TETAP NYALA (Biar aman dari serangan hacker)
-                .csrf(csrf -> {})
+                // 1. AKTIFKAN CORS menggunakan konfigurasi dari bean di bawah
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+                // 2. CSRF mattin dulu buat development
+                .csrf(csrf -> csrf.disable())
                 // 2. BEBASIN SEMUA URL biar gak kena gembok (Lakukan manual check di Controller)
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().permitAll()
@@ -47,5 +57,26 @@ public class SecurityConfig {
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable());
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        // Daftarkan alamat dan port frontend Anda (jangan pakai tanda / di akhir)
+        configuration.setAllowedOrigins(List.of("http://localhost:7001", "http://127.0.0.1:7001"));
+
+        // Izinkan method HTTP yang dibutuhkan
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+
+        // Izinkan semua header (seperti Authorization, Content-Type, X-XSRF-TOKEN)
+        configuration.setAllowedHeaders(List.of("*"));
+
+        // Izinkan pengiriman cookie / session / credentials
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }

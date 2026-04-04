@@ -465,5 +465,91 @@ public class ControllerSpreadSheet {
         }
         return this.response;
     }
+
+    public ResponseEntity<StreamingResponseBody> getPageFormInputCapaian(HttpServletRequest request) {
+        this.handleRequestProperties(request);
+        //check cookie
+        //System.out.println(this.cookie.getValue());
+        if (this.cookieHelper.checkExistCookie(this.cookie.getValue())) {
+            try {
+                HashMap objAccount = this.hlp.hashStringToHashMap(this.objCookie.get("objAccount").toString());
+                //renew cookie
+                this.cookie = this.cookieHelper.renewCookie(this.cookie.getValue());
+                HttpHeaders headers = new HttpHeaders();
+                headers.add("Set-Cookie", " SpreadSheetCookie=" + this.cookie.getValue() + "; Max-Age=" + this.cookie.getMaxAge() + "; Path=/; " + this.cookie.getPath() + "; " + this.cookie.getSecure());
+
+                CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
+                String jsonData = Files.readString(Paths.get(Main.conf.getMasterFolder() + File.separator + "webroot" + File.separator + "capaian.json"));
+                String jsonSatuan = Files.readString(Paths.get(Main.conf.getMasterFolder() + File.separator + "webroot" + File.separator + "satuan.json"));
+                String jsonLevel = Files.readString(Paths.get(Main.conf.getMasterFolder() + File.separator + "webroot" + File.separator + "level.json"));
+                Template header = this.freeMarkerCfg.getObjectMamenComponent().getTemplate(File.separator + "header" + ".html");
+                Template sideBar = this.freeMarkerCfg.getObjectMamenComponent().getTemplate(File.separator + "sidebar" + ".html");
+                Template sideBarSecondary = this.freeMarkerCfg.getObjectMamenComponent().getTemplate(File.separator + "sidebar_secondary" + ".html");
+                Template pageContent = this.freeMarkerCfg.getObjectMamenComponent().getTemplate(File.separator + view + "_page_content" + ".html");
+                Template template = this.freeMarkerCfg.getObjectMamen().getTemplate(view + ".html");
+                StreamingResponseBody responseBody = outputStream -> {
+                    try (Writer writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
+                        StringWriter headerSW = new StringWriter();
+                        StringWriter sideBarSW = new StringWriter();
+                        StringWriter sideBarSecondarySW = new StringWriter();
+                        StringWriter contentSW = new StringWriter();
+
+                        Map<String, Object> map = new HashMap<String, Object>();
+                        map.put("_csrf", csrfToken);
+                        map.put("webRootUrl", this.webRootUrl);
+                        map.put("baseUrl", this.baseUrl);
+                        map.put("activeSidebarMain", "form_capaian");
+                        map.put("jsonData", jsonData);
+                        map.put("jsonSatuan", jsonSatuan);
+                        map.put("jsonLevel", jsonLevel);
+
+                        // ---------------------Render header----------------------
+                        header.process(map, headerSW);
+                        map.put("headerObj", headerSW.toString());
+                        // ---------------------Render sidebar----------------------
+                        //sidebar
+                        sideBar.process(map, sideBarSW);
+                        map.put("sideBarObj", sideBarSW.toString());
+                        // ---------------------Render Sidebar Secondary----------------------
+                        //sidebar
+                        sideBarSecondary.process(map, sideBarSecondarySW);
+                        map.put("sideBarSecondaryObj", sideBarSecondarySW.toString());
+                        // ---------------------Render page content----------------------
+                        pageContent.process(map, contentSW);
+                        map.put("pageContentObj", contentSW.toString());
+
+                        // ---------------------Render all to writer---------------------
+                        template.process(map, writer); // <--- KUNCI IRIT RAM: Tulis langsung ke selang (writer)
+                        writer.flush();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        try {
+
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                };
+                return ResponseEntity.ok()
+                        .headers(headers)
+                        .contentType(MediaType.TEXT_HTML)
+                        .body(responseBody);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            } finally {
+                try {
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+
+
+        } else {
+            response = this.hlp.redirectToLogin(request, objRequestProperties);
+        }
+        return this.response;
+    }
 }
 
