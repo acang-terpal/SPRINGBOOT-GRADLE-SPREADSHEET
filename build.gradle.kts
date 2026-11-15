@@ -23,9 +23,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot")
     implementation("org.springframework.boot:spring-boot-autoconfigure")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.boot:spring-boot-starter-log4j2")
+    // HAPUS spring-boot-starter-log4j2 agar tidak bentrok dengan Logback
     implementation("org.springframework.boot:spring-boot-starter-web") {
-//        exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
         exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
         exclude(group = "org.springframework.boot", module = "spring-boot-starter-freemarker")
     }
@@ -36,10 +35,13 @@ dependencies {
     implementation("org.eclipse.jetty.compression:jetty-compression-server")
     implementation("org.eclipse.jetty:jetty-server")
 
-    // --- LOGGING (Log4j 2 + Bridge for old code) ---
-    implementation("org.slf4j:log4j-over-slf4j")
+    // --- LOGGING (Logback via Spring Boot + Bridge untuk Log4j 1.x lama) ---
+    implementation("org.springframework.boot:spring-boot-starter-logging")
+    implementation("org.slf4j:log4j-over-slf4j:2.0.16")
+    implementation("org.apache.logging.log4j:log4j-api:2.24.3")
+    implementation("org.apache.logging.log4j:log4j-to-slf4j:2.24.3")
     implementation("log4j:apache-log4j-extras:1.1") {
-        isTransitive = false // <--- PAKSA JANGAN AMBIL TEMAN-TEMANNYA
+        isTransitive = false
     }
 
     // --- DATABASES ---
@@ -116,12 +118,12 @@ tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar
 }
 
 configurations.all {
-    // 1. Paksa: Siapa pun yang minta log4j jadul, kasih 'log4j-over-slf4j' sebagai gantinya
     resolutionStrategy.dependencySubstitution {
         substitute(module("log4j:log4j")).using(module("org.slf4j:log4j-over-slf4j:2.0.16"))
     }
-    // 2. Tetap exclude saingan logback yang lain
+    // Pastikan log4j-to-slf4j TIDAK di-exclude di sini!
     exclude(group = "org.apache.logging.log4j", module = "log4j-slf4j2-impl")
     exclude(group = "org.apache.logging.log4j", module = "log4j-slf4j-impl")
+    exclude(group = "org.apache.logging.log4j", module = "log4j-core")
     exclude(group = "org.slf4j", module = "slf4j-simple")
 }

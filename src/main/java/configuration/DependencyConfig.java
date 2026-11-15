@@ -1,5 +1,6 @@
 package configuration;
 
+import com.google.gson.Gson;
 import entity.EntityConfig;
 import helper.CookieHelperExternal;
 import main.Main;
@@ -7,6 +8,8 @@ import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.config.DiskStoreConfiguration;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
@@ -14,6 +17,8 @@ import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 
 import java.io.File;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Configuration("dependencyConfig")
 @Scope("singleton")
@@ -23,13 +28,18 @@ public class DependencyConfig {
 
     private EntityConfig entityConfig;
     private ControllerLog controllerLog;
+    private Gson gson = new Gson().newBuilder().serializeNulls().create();
     private Cache cache;
     private Cache cacheCookies;
     private Cache cacheMaster;
 
+    private final Map<String, Workbook> workbookCache = new ConcurrentHashMap<>();
+    private final Map<String, FormulaEvaluator> evaluatorCache = new ConcurrentHashMap<>();
+
     @Autowired
     Environment env;
 
+    @Autowired
     public DependencyConfig() {
         //this is how to get cache
 //        CacheManager cacheManager = CacheManager.getInstance();
@@ -39,6 +49,11 @@ public class DependencyConfig {
 //        this.cacheCookies = cacheManager.getCache(" SpreadSheetCacheAppCookies");
 //        this.cacheMaster = cacheManager.getCache(" SpreadSheetCacheAppMaster");
         this.controllerLog = new ControllerLog();
+        this.controllerLog.logDebugWriter("=== TEST TULIS DEBUG SAAT STARTUP ===");
+        this.controllerLog.logErrorWriter("=== TEST TULIS ERROR SAAT STARTUP ===");
+        this.controllerLog.logStreamWriter("=== TEST TULIS STREAM SAAT STARTUP ===");
+        this.controllerLog.logXmppWriter("=== TEST TULIS XMPP SAAT STARTUP ===");
+        this.controllerLog.logParsingWriter("=== TEST TULIS PARSING SAAT STARTUP ===");
         this.initCache();
     }
 
@@ -105,6 +120,21 @@ public class DependencyConfig {
     @Bean("controllerLog")
     public ControllerLog getControllerLog() {
         return this.controllerLog;
+    }
+
+    @Bean("gson")
+    public Gson getGson() {
+        return this.gson;
+    }
+
+    @Bean("workbookCache")
+    public Map<String, Workbook> getWorkbookMap() {
+        return this.workbookCache;
+    }
+
+    @Bean("evaluatorCache")
+    public Map<String, FormulaEvaluator> getFormulaEvaluatorMap() {
+        return this.evaluatorCache;
     }
 
     @Bean("setCookie")

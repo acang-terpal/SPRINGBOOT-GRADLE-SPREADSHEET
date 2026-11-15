@@ -1,5 +1,6 @@
 package controller;
 
+import com.google.gson.Gson;
 import configuration.ControllerEncDec;
 import configuration.ControllerLog;
 import configuration.DependencyConfig;
@@ -16,6 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import main.Main;
 import net.sf.ehcache.Cache;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellReference;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -39,13 +41,14 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component("ControllerSpreadSheet")
 @Scope("prototype")
 public class ControllerSpreadSheet {
     // Cache simpel untuk simpan workbook di RAM
-    private static final Map<String, Workbook> workbookCache = new ConcurrentHashMap<>();
+    private Map<String, Workbook> workbookCache;
     private final EntityConfig entityConfig;
     private final InterfcSpreadSheetLogin service;
     private final SpreadSheetAccountService SpreadSheetAccountService;
@@ -57,19 +60,25 @@ public class ControllerSpreadSheet {
     private final FreeMarkerConfig freeMarkerCfg;
     private final Cache cacheCookies;
     private final Cache cacheMaster;
+    private final Gson gson;
     private ResponseEntity<StreamingResponseBody> response;
     private String fullUri, fullUrl, query, webroot, controller, methode, view, webRootUrl, baseUrl, hostPort;
     private HashMap objParams, objRequestProperties, objCookie;
     private Cookie cookie;
+    private final String cacheKey = "excel_base_object";
+    private final String cacheKeyByte = "excel_base_byte";
 
     @Autowired
-    public ControllerSpreadSheet(DependencyConfig dependencyConfig, FreeMarkerConfig freeMarkerCfg, Utilities utilities, Helper hlp, ImpleSpreadSheetLogin impleSpreadSheetLogin, CookieHelperDb cookieHelperDb, ControllerEncDec controllerEncDec, SpreadSheetAccountService SpreadSheetAccountService) {
+    public ControllerSpreadSheet(DependencyConfig dependencyConfig, FreeMarkerConfig freeMarkerCfg, Utilities utilities, Helper hlp, ImpleSpreadSheetLogin impleSpreadSheetLogin, CookieHelperDb cookieHelperDb, ControllerEncDec controllerEncDec, SpreadSheetAccountService SpreadSheetAccountService,
+                                 Map<String, Workbook> workbookCache, Gson gson) {
         this.controllerLog = dependencyConfig.getControllerLog();
         this.entityConfig = dependencyConfig.getEntityConfig();
         this.freeMarkerCfg = freeMarkerCfg;
         this.cacheCookies = dependencyConfig.getCacheCookies();
         this.cacheMaster = dependencyConfig.getCacheMaster();
         this.utilities = utilities;
+        this.workbookCache = workbookCache;
+        this.gson = gson;
         this.hlp = hlp;
         this.cookieHelper = cookieHelperDb;
         this.encDec = controllerEncDec;
@@ -111,23 +120,30 @@ public class ControllerSpreadSheet {
         jObjResponse.put("message", "Failed");
         String filePath = this.entityConfig.getWorkDir() + File.separator + "webroot" + File.separator + "20261101 TW 4 Perhitungan Matriks Capaian DJ MIGAS.xlsx";
 
-        // 1. LOAD WORKBOOK (Logic Cache)
-        Workbook workbook = workbookCache.computeIfAbsent("excel_base_object", k -> {
+        // 1. AMBIL DATA DARI REQUEST
+        List<List<Object>> dataSource = (List<List<Object>>) objParams.get("dataSource");
+        String targetCell = Objects.toString(objParams.get("targetCell"), "").trim();
+        String formula = Objects.toString(objParams.get("formula"), "").trim();
+        String sheetName = Objects.toString(objParams.get("sheetName"), "").trim();
+
+        // 2. LOAD WORKBOOK (Logic Cache)
+        Workbook workbook = workbookCache.computeIfAbsent(cacheKey, k -> {
             try {
 //                System.out.println("--- SEDANG LOAD FILE FISIK EXCEL (BUKAN CACHE) ---");
-                return WorkbookFactory.create(new File(filePath));
+                Workbook wb = WorkbookFactory.create(new File(filePath));
+                return wb;
             } catch (Exception e) {
                 throw new RuntimeException("Gagal load excel bro!", e);
             }
         });
-
-        // 2. AMBIL DATA DARI REQUEST
-        List<List<Object>> dataSource = (List<List<Object>>) objParams.get("dataSource");
-        String sheetName = ((String) objParams.get("sheetName")).trim();
+        FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
+        evaluator.setIgnoreMissingWorkbooks(true);
+        // evaluator.clearAllCachedResultValues(); // Di POI, rumus gak otomatis update pas cell berubah, harus dipicu manual
+        // evaluator.setIgnoreMissingWorkbooks(true); // JANGAN BERHENTI PAS KETEMU ERROR (Mirip PHP)
+        // workbook.setForceFormulaRecalculation(true);  // Paksa Workbook buat ngitung ulang pas file dibuka nanti
 
         Sheet activeSheet = workbook.getSheet(sheetName);
         if (activeSheet == null) {
-            System.err.println("Sheet '" + sheetName + "' gak ketemu, bro!");
             jObjResponse.put("rc", "06");
             jObjResponse.put("message", "Failed, sheet name not found!");
             HttpHeaders headers = new HttpHeaders();
@@ -141,8 +157,9 @@ public class ControllerSpreadSheet {
             this.response = new ResponseEntity<>(responseBody, headers, HttpStatus.BAD_REQUEST);
         }
 
-//        synchronized (workbook) {
-            // 3. MODIFIKASI DATA (Update Cells)
+        // 3. MODIFIKASI DATA (Update Cells)
+        // it request init data from FE
+        if (targetCell.isBlank() && formula.isBlank()) {
             for (int r = 0; r < dataSource.size(); r++) {
                 List<Object> columns = dataSource.get(r);
                 Row row = activeSheet.getRow(r);
@@ -156,52 +173,60 @@ public class ControllerSpreadSheet {
                     updateCellValue(cell, value);
                 }
             }
+        } else { // ini request untuk update salah satu cell saja
+            CellReference ref = new CellReference(targetCell);
+            Row rowTarget = activeSheet.getRow(ref.getRow());
+            if (rowTarget == null) {
+                rowTarget = activeSheet.createRow(ref.getRow());
+            }
+            Cell cellTarget = rowTarget.getCell(ref.getCol());
+            if (cellTarget == null) {
+                cellTarget = rowTarget.createCell(ref.getCol());
+            }
+            // 1. Update nilai atau rumus pada targetCell
+            updateCellValue(cellTarget, formula);
+        }
 
-            // 4. RE-EVALUATE FORMULA
-            FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
-            evaluator.clearAllCachedResultValues(); // Di POI, rumus gak otomatis update pas cell berubah, harus dipicu manual
-            evaluator.setIgnoreMissingWorkbooks(true); // JANGAN BERHENTI PAS KETEMU ERROR (Mirip PHP)
-            workbook.setForceFormulaRecalculation(true);  // Paksa Workbook buat ngitung ulang pas file dibuka nanti
+        // 5. RETURN HASIL (getCalculatedValue)
+        StreamingResponseBody responseBody = outputStream -> {
+            com.fasterxml.jackson.core.JsonFactory jsonFactory = new com.fasterxml.jackson.core.JsonFactory();
+            try (com.fasterxml.jackson.core.JsonGenerator jGen = jsonFactory.createGenerator(outputStream, com.fasterxml.jackson.core.JsonEncoding.UTF8)) {
+                jGen.writeStartObject();
+                jGen.writeStringField("rc", "00");
+                jGen.writeStringField("message", "Success");
 
-            // 5. RETURN HASIL (getCalculatedValue)
-            Map<String, Object> calculatedValue = new HashMap<>();
-            for (Row row : activeSheet) {
-                for (Cell cell : row) {
-                    String coordinate = cell.getAddress().formatAsString();
-                    Object value = "";
+                for (Row row : activeSheet) {
+                    for (Cell cell : row) {
+                        if (cell.getCellType() == CellType.BLANK) continue;
 
-                    try {
-                        // Gunakan ini untuk mengevaluasi tanpa return CellValue langsung
+                        String coordinate = cell.getAddress().formatAsString();
+                        Object value;
                         if (cell.getCellType() == CellType.FORMULA) {
-                            // Biarkan POI ngitung di dalam cell itu sendiri
+                            // Biarkan POI ngitung di dalam cell itu sendiri, kalau pakai evaluateAll() error guys
                             evaluator.evaluateFormulaCell(cell);
                         }
-
                         // Panggil helper yang tadi udah kita bikin kebal error
                         value = getCalculatedValue(cell, evaluator);
-                    } catch (Exception e) {
-                        // Kalau rumusnya beneran "pecah" di dalem, tangkap di sini
-                        value = "#VALUE!";
-                    }
 
-                    calculatedValue.put(coordinate, value);
-                    jObjResponse.put(coordinate, value);
+                        if (value instanceof Number num) {
+                            jGen.writeNumberField(coordinate, num.doubleValue());
+                        } else if (value instanceof Boolean bool) {
+                            jGen.writeBooleanField(coordinate, bool);
+                        } else {
+                            jGen.writeStringField(coordinate, String.valueOf(value));
+                        }
+                    }
                 }
+                jGen.writeEndObject();
             }
-            final JSONObject finalJObjResponse = jObjResponse;
-            StreamingResponseBody responseBody = outputStream -> {
-                String data = finalJObjResponse.toString();
-                outputStream.write(data.getBytes(StandardCharsets.UTF_8));
-                outputStream.flush();
-            };
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("Content-Type", String.valueOf(MediaType.APPLICATION_JSON));
-            this.response = ResponseEntity.ok()
-                    .headers(headers)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(responseBody);
-            return this.response;
-//        }
+        };
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", String.valueOf(MediaType.APPLICATION_JSON));
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(responseBody);
     }
 
     // Helper buat nulis berbagai tipe data
@@ -267,26 +292,30 @@ public class ControllerSpreadSheet {
 
     private Object getCalculatedValue(Cell cell, FormulaEvaluator evaluator) {
         if (cell == null) return "";
-
-        try {
-            // 1. Pakai DataFormatter: Ini bakal balikin STRING sesuai tampilan di layar Excel
-            // Dia otomatis nge-handle FormulaEvaluator juga di dalemnya
-            DataFormatter formatter = new DataFormatter();
-            String val = formatter.formatCellValue(cell, evaluator);
-
-            // 2. Cek kalau hasilnya kosong (Blank Cell)
-            if (val == null || val.trim().isEmpty()) {
-                return "";
+        CellType type = (cell.getCellType() == CellType.FORMULA)
+                ? cell.getCachedFormulaResultType()
+                : cell.getCellType();
+        return switch (type) {
+            case NUMERIC -> {
+                // 1. Cek jika formatnya Tanggal
+                if (org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted(cell)) {
+                    yield new DataFormatter().formatCellValue(cell);
+                }
+                double value = cell.getNumericCellValue();
+                String formatString = cell.getCellStyle().getDataFormatString();
+                // 2. Cek jika formatnya Persen (tetap jaga desimalnya, misal 12.34%)
+                if (formatString != null && formatString.contains("%")) {
+                    double percentVal = Math.round((value * 100.0) * 10000.0) / 10000.0; // Maks 4 desimal
+                    yield percentVal + "%";
+                }
+                // 3. Kembalikan angka double MURNI tanpa pembulatan atau koma ribuan!
+                yield value;
             }
-
-            // 3. (Opsional) Kalau lu pengen hasil balisannya tetep angka biar bisa diitung di JS
-            // Tapi kalau lu mau "Persis" kayak Excel (ada Rp, %, dll), langsung return 'val'
-            return val;
-
-        } catch (Exception e) {
-            // Kalau rumusnya error parah di dalem
-            return "#ERROR!";
-        }
+            case BOOLEAN -> cell.getBooleanCellValue();
+            case STRING -> cell.getStringCellValue();
+            case ERROR -> "#VALUE!";
+            default -> "";
+        };
     }
 
     public ResponseEntity<StreamingResponseBody> getPage(HttpServletRequest request) {

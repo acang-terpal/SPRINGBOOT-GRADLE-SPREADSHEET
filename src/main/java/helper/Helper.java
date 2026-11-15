@@ -552,8 +552,6 @@ public class Helper {
 
     public HashMap handleRequestProperties(HttpServletRequest request) {
         String data = "Internal Error";
-        byte[] dataOut = data.getBytes(StandardCharsets.UTF_8);
-        //ResponseEntity<byte[]> response = ResponseEntity.status(HttpStatus.BAD_GATEWAY).build();
         ResponseEntity<byte[]> response = new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
 
         String fullUri = request.getRequestURI().substring(1);
@@ -572,35 +570,29 @@ public class Helper {
 //        System.out.println("fullUrl : " + fullUrl);
 //        System.out.println("query : " + query);
 
-        //to convert query get and post param http to hashmap
+        // to convert query get and post param http to hashmap
         HashMap<String, Object> objParams = new HashMap<>();
         for (String params : Collections.list(request.getParameterNames())) {
-            // Whatever you want to do with your map
-            // Key : params
-            // Value : httpServletRequest.getParameter(params)
-//            System.out.println("params : " + params);
-//            System.out.println("Value : " + request.getParameter(params));
             objParams.put(params, request.getParameter(params));
         }
+
         if (!request.getParameterNames().hasMoreElements()) {
             // 2. BACA JSON BODY (Karena getParameter pasti kosong buat JSON)
             try {
-                // Pakai Scanner atau IOUtils buat baca String dari request body
-                String body = new java.util.Scanner(request.getInputStream(), StandardCharsets.UTF_8).useDelimiter("\\A").next();
-
-                if (body != null && !body.isEmpty()) {
+                java.util.Scanner scanner = new java.util.Scanner(request.getInputStream(), StandardCharsets.UTF_8).useDelimiter("\\A");
+                String body = scanner.hasNext() ? scanner.next() : "";
+                if (!body.isEmpty()) {
                     // Convert String JSON ke JSONObject
                     org.json.JSONObject jBody = new org.json.JSONObject(body);
-                    // Pindahin isi JSON ke objParams
-                    objParams.put("dataSource", jBody.getJSONArray("dataSource").toList());
-                    objParams.put("sheetName", jBody.getString("sheetName"));
-//                System.out.println(this.objParams.toString());
+                    // Otomatis populasikan SEMUA key & value JSON ke objParams (termasuk List & nested Map)
+                    objParams.putAll(jBody.toMap());
+                    // Log seluruh isi params yang sudah masuk
+                    //controllerLog.logDebugWriter("params : " + objParams);
                 }
             } catch (Exception e) {
-//                System.err.println("Gagal baca JSON Body: " + e.getMessage());
+                controllerLog.logErrorWriter("Error parsing JSON body: " + e.getMessage());
             }
         }
-//        System.out.println(objParams.toString());
         String[] uriSplit = fullUri.split("/");
 //        for (String uri : uriSplit) {
 //            System.out.println("uriSplit : " + uri);

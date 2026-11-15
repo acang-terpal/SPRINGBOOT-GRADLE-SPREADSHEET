@@ -5,7 +5,8 @@
  */
 package configuration;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -13,11 +14,11 @@ import org.apache.log4j.Logger;
  */
 public class ControllerLog {
 
-    final static Logger logStream = Logger.getLogger("stream");
-    final static Logger logError = Logger.getLogger("error");
-    final static Logger logDebug = Logger.getLogger("debug");
-    final static Logger logParsing = Logger.getLogger("parsing");
-    final static Logger logXmpp = Logger.getLogger("xmpp");
+    final static Logger logStream = LoggerFactory.getLogger("stream");
+    final static Logger logError = LoggerFactory.getLogger("error");
+    final static Logger logDebug = LoggerFactory.getLogger("debug");
+    final static Logger logParsing = LoggerFactory.getLogger("parsing");
+    final static Logger logXmpp = LoggerFactory.getLogger("xmpp");
 
     public ControllerLog() {
     }
