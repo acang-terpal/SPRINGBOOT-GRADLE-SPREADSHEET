@@ -31,17 +31,11 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import org.springframework.web.util.WebUtils;
 import service.sqlite.SpreadSheetAccountService;
 
-import java.io.File;
-import java.io.OutputStreamWriter;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component("ControllerSpreadSheet")
@@ -133,22 +127,32 @@ public class ControllerSpreadSheet {
         StreamingResponseBody responseBody = outputStream -> {
             // sync per workbook
             synchronized (workbook) {
-                try (com.fasterxml.jackson.core.JsonGenerator jGen = new com.fasterxml.jackson.core.JsonFactory()
+                try (com.fasterxml.jackson.core.JsonGenerator jsonGenerator = new com.fasterxml.jackson.core.JsonFactory()
                         .createGenerator(outputStream, com.fasterxml.jackson.core.JsonEncoding.UTF8)) {
 
                     Sheet activeSheet = workbook.getSheet(sheetName);
                     if (activeSheet == null) {
-                        jGen.writeStartObject();
-                        jGen.writeStringField("rc", "06");
-                        jGen.writeStringField("message", "Failed, sheet name not found!");
-                        jGen.writeEndObject();
+                        jsonGenerator.writeStartObject();
+                        jsonGenerator.writeStringField("rc", "06");
+                        jsonGenerator.writeStringField("message", "Failed, sheet name not found!");
+                        jsonGenerator.writeEndObject();
                         return;
                     }
 
                     FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
                     evaluator.setIgnoreMissingWorkbooks(true);
 
-                    // 4. MODIFIKASI DATA (Update Cells)
+                    // Simpan daftar koordinat sel formula yang ada di sheet ini
+                    List<Cell> formulaCells = new ArrayList<>();
+                    for (Row row : activeSheet) {
+                        for (Cell cell : row) {
+                            if (cell.getCellType() == CellType.FORMULA) {
+                                formulaCells.add(cell);
+                            }
+                        }
+                    }
+
+                    // 4. MODIFIKASI DATA (Update Cells) dan return cell terkait
                     if (targetCell.isBlank() && formula.isBlank()) {
                         if (dataSource != null) {
                             for (int r = 0; r < dataSource.size(); r++) {
@@ -162,49 +166,70 @@ public class ControllerSpreadSheet {
                                     updateCellValue(cell, columns.get(c));
                                 }
                             }
+
+                            jsonGenerator.writeStartObject();
+                            jsonGenerator.writeStringField("rc", "00");
+                            jsonGenerator.writeStringField("message", "Success");
+                            for (Row row : activeSheet) {
+                                for (Cell cell : row) {
+                                    if (cell.getCellType() == CellType.BLANK) continue;
+                                    writeCellToJson(jsonGenerator, cell, evaluator);
+                                }
+                            }
+                            jsonGenerator.writeEndObject();
                         }
                     } else {
+                        // --- MODE DELTA UPDATE: Hanya hitung ulang sel formula & kirim yang nilainya BERUBAH ---
+                        // A. Catat nilai LAMA seluruh sel formula sebelum targetCell diubah
+                        Map<String, Object> oldValues = new HashMap<>(formulaCells.size());
+                        for (Cell fCell : formulaCells) {
+                            oldValues.put(fCell.getAddress().formatAsString(), getCachedOnlyValue(fCell));
+                        }
+
+                        // B. Update targetCell
                         CellReference ref = new CellReference(targetCell);
                         Row rowTarget = activeSheet.getRow(ref.getRow());
                         if (rowTarget == null) rowTarget = activeSheet.createRow(ref.getRow());
-
                         Cell cellTarget = rowTarget.getCell(ref.getCol());
                         if (cellTarget == null) cellTarget = rowTarget.createCell(ref.getCol());
 
                         updateCellValue(cellTarget, formula);
-                    }
 
-                    // 5. EVALUASI FORMULA & TULIS STREAM JSON
-                    jGen.writeStartObject();
-                    jGen.writeStringField("rc", "00");
-                    jGen.writeStringField("message", "Success");
+                        // Jika targetCell baru saja diubah menjadi FORMULA, pastikan masuk daftar formulaCells
+                        if (cellTarget.getCellType() == CellType.FORMULA && !formulaCells.contains(cellTarget)) {
+                            formulaCells.add(cellTarget);
+                        }
 
-                    for (Row row : activeSheet) {
-                        for (Cell cell : row) {
-                            if (cell.getCellType() == CellType.BLANK) continue;
+                        // C. Tulis JSON HANYA untuk targetCell + sel formula yang nilainya berubah!
+                        jsonGenerator.writeStartObject();
+                        jsonGenerator.writeStringField("rc", "00");
+                        jsonGenerator.writeStringField("message", "Success");
 
-                            String coordinate = cell.getAddress().formatAsString();
-                            Object value;
+                        // 1. Selalu kirim hasil terbaru dari targetCell itu sendiri
+                        String targetCoord = cellTarget.getAddress().formatAsString();
+                        writeCellToJson(jsonGenerator, cellTarget, evaluator);
+
+                        // 2. Loop HANYA pada sel-sel yang berisi FORMULA (bukan jutaan data mentah!)
+                        for (Cell fCell : formulaCells) {
+                            String coord = fCell.getAddress().formatAsString();
+                            if (coord.equals(targetCoord)) continue; // Sudah ditulis di atas
+
+                            Object newValue;
                             try {
-                                if (cell.getCellType() == CellType.FORMULA) {
-                                    evaluator.evaluateFormulaCell(cell);
-                                }
-                                value = getCalculatedValue(cell, evaluator);
+                                evaluator.evaluateFormulaCell(fCell);
+                                newValue = getCachedOnlyValue(fCell);
                             } catch (Throwable e) {
-                                value = "#VALUE!";
+                                newValue = "#VALUE!";
                             }
 
-                            if (value instanceof Number num) {
-                                jGen.writeNumberField(coordinate, num.doubleValue());
-                            } else if (value instanceof Boolean bool) {
-                                jGen.writeBooleanField(coordinate, bool);
-                            } else {
-                                jGen.writeStringField(coordinate, String.valueOf(value));
+                            // Bandingkan dengan nilai lama: JIKA BERUBAH, baru kirim ke JSON!
+                            Object oldValue = oldValues.get(coord);
+                            if (!Objects.equals(oldValue, newValue)) {
+                                writeNumberOrStringField(jsonGenerator, coord, newValue);
                             }
                         }
+                        jsonGenerator.writeEndObject();
                     }
-                    jGen.writeEndObject();
-
                 } catch (Exception e) {
                     throw new RuntimeException("Gagal memproses formula Excel", e);
                 }
@@ -214,6 +239,52 @@ public class ControllerSpreadSheet {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(responseBody);
+    }
+
+    private void writeCellToJson(com.fasterxml.jackson.core.JsonGenerator jGen, Cell cell, FormulaEvaluator evaluator) throws IOException {
+        String coordinate = cell.getAddress().formatAsString();
+        Object value;
+        try {
+            if (cell.getCellType() == CellType.FORMULA) {
+                evaluator.evaluateFormulaCell(cell);
+            }
+            value = getCachedOnlyValue(cell);
+        } catch (Throwable e) {
+            value = "#VALUE!";
+        }
+        writeNumberOrStringField(jGen, coordinate, value);
+    }
+
+    private void writeNumberOrStringField(com.fasterxml.jackson.core.JsonGenerator jGen, String coordinate, Object value) throws IOException {
+        if (value instanceof Number num) {
+            jGen.writeNumberField(coordinate, num.doubleValue());
+        } else if (value instanceof Boolean bool) {
+            jGen.writeBooleanField(coordinate, bool);
+        } else {
+            jGen.writeStringField(coordinate, String.valueOf(value));
+        }
+    }
+
+    private Object getCachedOnlyValue(Cell cell) {
+        if (cell == null) return "";
+        CellType type = (cell.getCellType() == CellType.FORMULA)
+                ? cell.getCachedFormulaResultType()
+                : cell.getCellType();
+
+        return switch (type) {
+            case NUMERIC -> {
+                double value = cell.getNumericCellValue();
+                String formatString = cell.getCellStyle().getDataFormatString();
+                if (formatString != null && formatString.contains("%")) {
+                    yield (value * 100) + "%";
+                }
+                yield value;
+            }
+            case BOOLEAN -> cell.getBooleanCellValue();
+            case STRING -> cell.getStringCellValue();
+            case ERROR -> "#VALUE!";
+            default -> "";
+        };
     }
 
     // Helper buat nulis berbagai tipe data
