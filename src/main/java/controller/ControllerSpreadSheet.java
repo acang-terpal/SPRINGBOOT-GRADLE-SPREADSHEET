@@ -48,7 +48,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Scope("prototype")
 public class ControllerSpreadSheet {
     // Cache simpel untuk simpan workbook di RAM
-    private Map<String, Workbook> workbookCache;
+    private final com.google.common.cache.Cache<String, Workbook> workbookCache;
     private final EntityConfig entityConfig;
     private final InterfcSpreadSheetLogin service;
     private final SpreadSheetAccountService SpreadSheetAccountService;
@@ -65,12 +65,10 @@ public class ControllerSpreadSheet {
     private String fullUri, fullUrl, query, webroot, controller, methode, view, webRootUrl, baseUrl, hostPort;
     private HashMap objParams, objRequestProperties, objCookie;
     private Cookie cookie;
-    private final String cacheKey = "excel_base_object";
-    private final String cacheKeyByte = "excel_base_byte";
 
     @Autowired
     public ControllerSpreadSheet(DependencyConfig dependencyConfig, FreeMarkerConfig freeMarkerCfg, Utilities utilities, Helper hlp, ImpleSpreadSheetLogin impleSpreadSheetLogin, CookieHelperDb cookieHelperDb, ControllerEncDec controllerEncDec, SpreadSheetAccountService SpreadSheetAccountService,
-                                 Map<String, Workbook> workbookCache, Gson gson) {
+                                 com.google.common.cache.Cache<String, Workbook> workbookCache, Gson gson) {
         this.controllerLog = dependencyConfig.getControllerLog();
         this.entityConfig = dependencyConfig.getEntityConfig();
         this.freeMarkerCfg = freeMarkerCfg;
@@ -115,116 +113,105 @@ public class ControllerSpreadSheet {
 
     public ResponseEntity<StreamingResponseBody> formulaExecutor(HttpServletRequest request) throws Exception {
         this.handleRequestProperties(request);
-        JSONObject jObjResponse = new JSONObject();
-        jObjResponse.put("rc", "01");
-        jObjResponse.put("message", "Failed");
         String filePath = this.entityConfig.getWorkDir() + File.separator + "webroot" + File.separator + "20261101 TW 4 Perhitungan Matriks Capaian DJ MIGAS.xlsx";
 
-        // 1. AMBIL DATA DARI REQUEST
+        // 1. AMBIL DATA DARI REQUEST (Null-safe)
         List<List<Object>> dataSource = (List<List<Object>>) objParams.get("dataSource");
-        String targetCell = Objects.toString(objParams.get("targetCell"), "").trim();
-        String formula = Objects.toString(objParams.get("formula"), "").trim();
-        String sheetName = Objects.toString(objParams.get("sheetName"), "").trim();
+        String targetCell = objParams.get("targetCell") != null ? objParams.get("targetCell").toString().trim() : "";
+        String formula = objParams.get("formula") != null ? objParams.get("formula").toString().trim() : "";
+        String sheetName = objParams.get("sheetName") != null ? objParams.get("sheetName").toString().trim() : "";
+        String cacheKey = "it_should_be_unique_per_client_or_group";
 
-        // 2. LOAD WORKBOOK (Logic Cache)
-        Workbook workbook = workbookCache.computeIfAbsent(cacheKey, k -> {
-            try {
-//                System.out.println("--- SEDANG LOAD FILE FISIK EXCEL (BUKAN CACHE) ---");
-                Workbook wb = WorkbookFactory.create(new File(filePath));
-                return wb;
-            } catch (Exception e) {
-                throw new RuntimeException("Gagal load excel bro!", e);
-            }
+        // 2. LOAD BYTE ARRAY EXCEL KE RAM (Diambil dari Singleton Bean excelBytesCache)
+        Workbook workbook = workbookCache.get(cacheKey, () -> {
+            // System.out.println("--- MEMBUAT WORKBOOK BARU UNTUK SESI: " + cacheKey + " ---");
+            return WorkbookFactory.create(new File(filePath));
         });
-        FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
-        evaluator.setIgnoreMissingWorkbooks(true);
-        // evaluator.clearAllCachedResultValues(); // Di POI, rumus gak otomatis update pas cell berubah, harus dipicu manual
-        // evaluator.setIgnoreMissingWorkbooks(true); // JANGAN BERHENTI PAS KETEMU ERROR (Mirip PHP)
-        // workbook.setForceFormulaRecalculation(true);  // Paksa Workbook buat ngitung ulang pas file dibuka nanti
 
-        Sheet activeSheet = workbook.getSheet(sheetName);
-        if (activeSheet == null) {
-            jObjResponse.put("rc", "06");
-            jObjResponse.put("message", "Failed, sheet name not found!");
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("Content-Type", String.valueOf(MediaType.TEXT_HTML));
-            JSONObject finalJObjResponse1 = jObjResponse;
-            StreamingResponseBody responseBody = outputStream -> {
-                String data = finalJObjResponse1.toString();
-                outputStream.write(data.getBytes(StandardCharsets.UTF_8));
-                outputStream.flush();
-            };
-            this.response = new ResponseEntity<>(responseBody, headers, HttpStatus.BAD_REQUEST);
-        }
-
-        // 3. MODIFIKASI DATA (Update Cells)
-        // it request init data from FE
-        if (targetCell.isBlank() && formula.isBlank()) {
-            for (int r = 0; r < dataSource.size(); r++) {
-                List<Object> columns = dataSource.get(r);
-                Row row = activeSheet.getRow(r);
-                if (row == null) row = activeSheet.createRow(r);
-
-                for (int c = 0; c < columns.size(); c++) {
-                    Cell cell = row.getCell(c);
-                    if (cell == null) cell = row.createCell(c);
-
-                    Object value = columns.get(c);
-                    updateCellValue(cell, value);
-                }
-            }
-        } else { // ini request untuk update salah satu cell saja
-            CellReference ref = new CellReference(targetCell);
-            Row rowTarget = activeSheet.getRow(ref.getRow());
-            if (rowTarget == null) {
-                rowTarget = activeSheet.createRow(ref.getRow());
-            }
-            Cell cellTarget = rowTarget.getCell(ref.getCol());
-            if (cellTarget == null) {
-                cellTarget = rowTarget.createCell(ref.getCol());
-            }
-            // 1. Update nilai atau rumus pada targetCell
-            updateCellValue(cellTarget, formula);
-        }
-
-        // 5. RETURN HASIL (getCalculatedValue)
+        // 3. BUKA WORKBOOK & STREAMING JSON DI DALAM LAMBDA YANG SAMA
+        // Menjamin Workbook tetap terbuka selama proses evaluasi & pengiriman JSON berlangsung
         StreamingResponseBody responseBody = outputStream -> {
-            com.fasterxml.jackson.core.JsonFactory jsonFactory = new com.fasterxml.jackson.core.JsonFactory();
-            try (com.fasterxml.jackson.core.JsonGenerator jGen = jsonFactory.createGenerator(outputStream, com.fasterxml.jackson.core.JsonEncoding.UTF8)) {
-                jGen.writeStartObject();
-                jGen.writeStringField("rc", "00");
-                jGen.writeStringField("message", "Success");
+            // sync per workbook
+            synchronized (workbook) {
+                try (com.fasterxml.jackson.core.JsonGenerator jGen = new com.fasterxml.jackson.core.JsonFactory()
+                        .createGenerator(outputStream, com.fasterxml.jackson.core.JsonEncoding.UTF8)) {
 
-                for (Row row : activeSheet) {
-                    for (Cell cell : row) {
-                        if (cell.getCellType() == CellType.BLANK) continue;
+                    Sheet activeSheet = workbook.getSheet(sheetName);
+                    if (activeSheet == null) {
+                        jGen.writeStartObject();
+                        jGen.writeStringField("rc", "06");
+                        jGen.writeStringField("message", "Failed, sheet name not found!");
+                        jGen.writeEndObject();
+                        return;
+                    }
 
-                        String coordinate = cell.getAddress().formatAsString();
-                        Object value;
-                        if (cell.getCellType() == CellType.FORMULA) {
-                            // Biarkan POI ngitung di dalam cell itu sendiri, kalau pakai evaluateAll() error guys
-                            evaluator.evaluateFormulaCell(cell);
+                    FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
+                    evaluator.setIgnoreMissingWorkbooks(true);
+
+                    // 4. MODIFIKASI DATA (Update Cells)
+                    if (targetCell.isBlank() && formula.isBlank()) {
+                        if (dataSource != null) {
+                            for (int r = 0; r < dataSource.size(); r++) {
+                                List<Object> columns = dataSource.get(r);
+                                Row row = activeSheet.getRow(r);
+                                if (row == null) row = activeSheet.createRow(r);
+
+                                for (int c = 0; c < columns.size(); c++) {
+                                    Cell cell = row.getCell(c);
+                                    if (cell == null) cell = row.createCell(c);
+                                    updateCellValue(cell, columns.get(c));
+                                }
+                            }
                         }
-                        // Panggil helper yang tadi udah kita bikin kebal error
-                        value = getCalculatedValue(cell, evaluator);
+                    } else {
+                        CellReference ref = new CellReference(targetCell);
+                        Row rowTarget = activeSheet.getRow(ref.getRow());
+                        if (rowTarget == null) rowTarget = activeSheet.createRow(ref.getRow());
 
-                        if (value instanceof Number num) {
-                            jGen.writeNumberField(coordinate, num.doubleValue());
-                        } else if (value instanceof Boolean bool) {
-                            jGen.writeBooleanField(coordinate, bool);
-                        } else {
-                            jGen.writeStringField(coordinate, String.valueOf(value));
+                        Cell cellTarget = rowTarget.getCell(ref.getCol());
+                        if (cellTarget == null) cellTarget = rowTarget.createCell(ref.getCol());
+
+                        updateCellValue(cellTarget, formula);
+                    }
+
+                    // 5. EVALUASI FORMULA & TULIS STREAM JSON
+                    jGen.writeStartObject();
+                    jGen.writeStringField("rc", "00");
+                    jGen.writeStringField("message", "Success");
+
+                    for (Row row : activeSheet) {
+                        for (Cell cell : row) {
+                            if (cell.getCellType() == CellType.BLANK) continue;
+
+                            String coordinate = cell.getAddress().formatAsString();
+                            Object value;
+                            try {
+                                if (cell.getCellType() == CellType.FORMULA) {
+                                    evaluator.evaluateFormulaCell(cell);
+                                }
+                                value = getCalculatedValue(cell, evaluator);
+                            } catch (Throwable e) {
+                                value = "#VALUE!";
+                            }
+
+                            if (value instanceof Number num) {
+                                jGen.writeNumberField(coordinate, num.doubleValue());
+                            } else if (value instanceof Boolean bool) {
+                                jGen.writeBooleanField(coordinate, bool);
+                            } else {
+                                jGen.writeStringField(coordinate, String.valueOf(value));
+                            }
                         }
                     }
+                    jGen.writeEndObject();
+
+                } catch (Exception e) {
+                    throw new RuntimeException("Gagal memproses formula Excel", e);
                 }
-                jGen.writeEndObject();
             }
         };
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Type", String.valueOf(MediaType.APPLICATION_JSON));
         return ResponseEntity.ok()
-                .headers(headers)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(responseBody);
     }

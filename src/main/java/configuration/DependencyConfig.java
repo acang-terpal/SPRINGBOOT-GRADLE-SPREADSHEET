@@ -1,5 +1,7 @@
 package configuration;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalListener;
 import com.google.gson.Gson;
 import entity.EntityConfig;
 import helper.CookieHelperExternal;
@@ -8,7 +10,6 @@ import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.config.DiskStoreConfiguration;
-import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,7 @@ import org.springframework.core.env.Environment;
 
 import java.io.File;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 @Configuration("dependencyConfig")
 @Scope("singleton")
@@ -33,8 +34,21 @@ public class DependencyConfig {
     private Cache cacheCookies;
     private Cache cacheMaster;
 
-    private final Map<String, Workbook> workbookCache = new ConcurrentHashMap<>();
-    private final Map<String, FormulaEvaluator> evaluatorCache = new ConcurrentHashMap<>();
+    // Guava Cache: Maksimal 100 sesi aktif bersamaan & otomatis hapus jika idle > 30 menit
+    private static final com.google.common.cache.Cache<String, Workbook> workbookCache = CacheBuilder.newBuilder()
+            .maximumSize(100)
+            .expireAfterAccess(30, TimeUnit.MINUTES)
+            .removalListener((RemovalListener<String, Workbook>) notification -> {
+                Workbook wb = notification.getValue();
+                if (wb != null) {
+                    try {
+                        wb.close(); // Tutup resource Workbook secara bersih saat evicted/expired
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            })
+            .build();
 
     @Autowired
     Environment env;
@@ -128,13 +142,8 @@ public class DependencyConfig {
     }
 
     @Bean("workbookCache")
-    public Map<String, Workbook> getWorkbookMap() {
-        return this.workbookCache;
-    }
-
-    @Bean("evaluatorCache")
-    public Map<String, FormulaEvaluator> getFormulaEvaluatorMap() {
-        return this.evaluatorCache;
+    public com.google.common.cache.Cache<String, Workbook> workbookCache() {
+        return workbookCache;
     }
 
     @Bean("setCookie")
